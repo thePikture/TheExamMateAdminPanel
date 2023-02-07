@@ -64,6 +64,10 @@ export default function UserListToolbar({
   add,
   openModal,
   handleModal,
+  allStates,
+  selectedState,
+  setSelectedState,
+  handleSearch
 }) {
   return (
     <RootStyle
@@ -102,11 +106,13 @@ export default function UserListToolbar({
           {state && (
             <FormControl fullWidth>
               <InputLabel id="category">State</InputLabel>
-              <Select labelId="category" id="demo-simple-select" label="State">
-                <MenuItem value={'1'}>1</MenuItem>
-                <MenuItem value={'1'}>2</MenuItem>
-                <MenuItem value={'1'}>3</MenuItem>
-                <MenuItem value={'1'}>4</MenuItem>
+              <Select labelId="category" id="demo-simple-select" label="State" onChange={(e) => handleSearch(e.target.value)}>
+                {allStates.map((item) => {
+                  console.log(item)
+                  return (
+                    <MenuItem value={item.id}>{item.stateName}</MenuItem>
+                  )
+                })}
               </Select>
             </FormControl>
           )}
@@ -230,7 +236,7 @@ export default function UserListToolbar({
       ) : (
         <Box sx={{ minWidth: 170, margin: '7px' }}>
           {search && (
-            <Button type="submit" variant="contained" size="large">
+            <Button type="submit" variant="contained" size="large" onClick={handleSearch}>
               Search
             </Button>
           )}

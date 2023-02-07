@@ -3,7 +3,12 @@ import PropTypes from 'prop-types';
 import {
   Stack,
   Select,
-  Toolbar, Tooltip, IconButton, Typography, OutlinedInput, InputAdornment,
+  Toolbar,
+  Tooltip,
+  IconButton,
+  Typography,
+  OutlinedInput,
+  InputAdornment,
   MenuItem,
   InputLabel,
   FormControl,
@@ -45,7 +50,21 @@ UserListToolbar.propTypes = {
   onFilterName: PropTypes.func,
 };
 
-export default function UserListToolbar({ numSelected, filterName, onFilterName, state, district, taluk, school, board, grade, search }) {
+export default function UserListToolbar({
+  numSelected,
+  filterName,
+  onFilterName,
+  state,
+  district,
+  taluk,
+  school,
+  board,
+  grade,
+  search,
+  add,
+  openModal,
+  handleModal,
+}) {
   return (
     <RootStyle
       sx={{
@@ -61,7 +80,7 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName,
         </Typography>
       ) : (
         <SearchStyle
-          sx={{ margin: "7px" }}
+          sx={{ margin: '7px' }}
           fullWidth
           value={filterName}
           onChange={onFilterName}
@@ -79,15 +98,11 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName,
           {numSelected} selected
         </Typography>
       ) : (
-        <Box sx={{ minWidth: 170, margin: "7px" }}>
+        <Box sx={{ minWidth: 170, margin: '7px' }}>
           {state && (
             <FormControl fullWidth>
               <InputLabel id="category">State</InputLabel>
-              <Select
-                labelId="category"
-                id="demo-simple-select"
-                label="State"
-              >
+              <Select labelId="category" id="demo-simple-select" label="State">
                 <MenuItem value={'1'}>1</MenuItem>
                 <MenuItem value={'1'}>2</MenuItem>
                 <MenuItem value={'1'}>3</MenuItem>
@@ -103,23 +118,21 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName,
           {numSelected} selected
         </Typography>
       ) : (
-        <Box sx={{ minWidth: 170, margin: "7px" }}>
+        <>
           {district && (
-            <FormControl fullWidth>
-              <InputLabel id="category">District </InputLabel>
-              <Select
-                labelId="category"
-                id="demo-simple-select"
-                label="District "
-              >
-                <MenuItem value={'1'}>1</MenuItem>
-                <MenuItem value={'1'}>2</MenuItem>
-                <MenuItem value={'1'}>3</MenuItem>
-                <MenuItem value={'1'}>4</MenuItem>
-              </Select>
-            </FormControl>
+            <Box sx={{ minWidth: 170, margin: '7px' }}>
+              <FormControl fullWidth>
+                <InputLabel id="category">District </InputLabel>
+                <Select labelId="category" id="demo-simple-select" label="District ">
+                  <MenuItem value={'1'}>1</MenuItem>
+                  <MenuItem value={'1'}>2</MenuItem>
+                  <MenuItem value={'1'}>3</MenuItem>
+                  <MenuItem value={'1'}>4</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           )}
-        </Box>
+        </>
       )}
 
       {numSelected > 0 ? (
@@ -127,23 +140,21 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName,
           {numSelected} selected
         </Typography>
       ) : (
-        <Box sx={{ minWidth: 170, margin: "7px" }}>
+        <>
           {taluk && (
-            <FormControl fullWidth>
-              <InputLabel id="category">Taluk</InputLabel>
-              <Select
-                labelId="category"
-                id="demo-simple-select"
-                label="Taluk"
-              >
-                <MenuItem value={'1'}>1</MenuItem>
-                <MenuItem value={'1'}>2</MenuItem>
-                <MenuItem value={'1'}>3</MenuItem>
-                <MenuItem value={'1'}>4</MenuItem>
-              </Select>
-            </FormControl>
+            <Box sx={{ minWidth: 170, margin: '7px' }}>
+              <FormControl fullWidth>
+                <InputLabel id="category">Taluk</InputLabel>
+                <Select labelId="category" id="demo-simple-select" label="Taluk">
+                  <MenuItem value={'1'}>1</MenuItem>
+                  <MenuItem value={'1'}>2</MenuItem>
+                  <MenuItem value={'1'}>3</MenuItem>
+                  <MenuItem value={'1'}>4</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           )}
-        </Box>
+        </>
       )}
 
       {numSelected > 0 ? (
@@ -151,23 +162,21 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName,
           {numSelected} selected
         </Typography>
       ) : (
-        <Box sx={{ minWidth: 170, margin: "7px" }}>
+        <>
           {school && (
-            <FormControl fullWidth>
-              <InputLabel id="category">School</InputLabel>
-              <Select
-                labelId="category"
-                id="demo-simple-select"
-                label="School"
-              >
-                <MenuItem value={'1'}>1</MenuItem>
-                <MenuItem value={'1'}>2</MenuItem>
-                <MenuItem value={'1'}>3</MenuItem>
-                <MenuItem value={'1'}>4</MenuItem>
-              </Select>
-            </FormControl>
+            <Box sx={{ minWidth: 170, margin: '7px' }}>
+              <FormControl fullWidth>
+                <InputLabel id="category">School</InputLabel>
+                <Select labelId="category" id="demo-simple-select" label="School">
+                  <MenuItem value={'1'}>1</MenuItem>
+                  <MenuItem value={'1'}>2</MenuItem>
+                  <MenuItem value={'1'}>3</MenuItem>
+                  <MenuItem value={'1'}>4</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           )}
-        </Box>
+        </>
       )}
 
       {numSelected > 0 ? (
@@ -175,23 +184,21 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName,
           {numSelected} selected
         </Typography>
       ) : (
-        <Box sx={{ minWidth: 170, margin: "7px" }}>
+        <>
           {board && (
-            <FormControl fullWidth>
-              <InputLabel id="category">Board</InputLabel>
-              <Select
-                labelId="category"
-                id="demo-simple-select"
-                label="Board"
-              >
-                <MenuItem value={'1'}>1</MenuItem>
-                <MenuItem value={'1'}>2</MenuItem>
-                <MenuItem value={'1'}>3</MenuItem>
-                <MenuItem value={'1'}>4</MenuItem>
-              </Select>
-            </FormControl>
+            <Box sx={{ minWidth: 170, margin: '7px' }}>
+              <FormControl fullWidth>
+                <InputLabel id="category">Board</InputLabel>
+                <Select labelId="category" id="demo-simple-select" label="Board">
+                  <MenuItem value={'1'}>1</MenuItem>
+                  <MenuItem value={'1'}>2</MenuItem>
+                  <MenuItem value={'1'}>3</MenuItem>
+                  <MenuItem value={'1'}>4</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           )}
-        </Box>
+        </>
       )}
 
       {numSelected > 0 ? (
@@ -199,21 +206,33 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName,
           {numSelected} selected
         </Typography>
       ) : (
-        <Box sx={{ minWidth: 170, margin: "7px" }}>
+        <>
           {grade && (
-            <FormControl fullWidth>
-              <InputLabel id="category">Grade</InputLabel>
-              <Select
-                labelId="category"
-                id="demo-simple-select"
-                label="Grade"
-              >
-                <MenuItem value={'1'}>1</MenuItem>
-                <MenuItem value={'1'}>2</MenuItem>
-                <MenuItem value={'1'}>3</MenuItem>
-                <MenuItem value={'1'}>4</MenuItem>
-              </Select>
-            </FormControl>
+            <Box sx={{ minWidth: 170, margin: '7px' }}>
+              <FormControl fullWidth>
+                <InputLabel id="category">Grade</InputLabel>
+                <Select labelId="category" id="demo-simple-select" label="Grade">
+                  <MenuItem value={'1'}>1</MenuItem>
+                  <MenuItem value={'1'}>2</MenuItem>
+                  <MenuItem value={'1'}>3</MenuItem>
+                  <MenuItem value={'1'}>4</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          )}
+        </>
+      )}
+
+      {numSelected > 0 ? (
+        <Typography component="div" variant="subtitle1">
+          {numSelected} selected
+        </Typography>
+      ) : (
+        <Box sx={{ minWidth: 170, margin: '7px' }}>
+          {search && (
+            <Button type="submit" variant="contained" size="large">
+              Search
+            </Button>
           )}
         </Box>
       )}
@@ -223,13 +242,14 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName,
           {numSelected} selected
         </Typography>
       ) : (
-        <Box sx={{ minWidth: 170, margin: "7px" }}>
-          {search && (
-            <Button type='submit' variant="contained" size='large'>Search</Button>
+        <Box sx={{ minWidth: 170, margin: '7px', position: 'absolute', right: '0px' }}>
+          {add && (
+            <Button type="submit" variant="contained" size="large" onClick={handleModal}>
+              Add
+            </Button>
           )}
         </Box>
       )}
-
     </RootStyle>
   );
 }

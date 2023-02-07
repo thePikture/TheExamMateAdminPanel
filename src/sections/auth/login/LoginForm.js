@@ -1,9 +1,10 @@
+import axios from 'axios';
 import * as Yup from 'yup';
 import { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useFormik, Form, FormikProvider } from 'formik';
 // material
-import { Link, Stack, Checkbox, TextField, IconButton, InputAdornment, FormControlLabel } from '@mui/material';
+import { Link, Stack, Checkbox, TextField, IconButton, InputAdornment, FormControlLabel, Typography } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // component
 import Iconify from '../../../components/Iconify';
@@ -14,6 +15,7 @@ export default function LoginForm() {
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("")
 
   const LoginSchema = Yup.object().shape({
     username: Yup.string().required('Username is required'),
@@ -27,8 +29,23 @@ export default function LoginForm() {
       remember: true,
     },
     validationSchema: LoginSchema,
-    onSubmit: () => {
-      navigate('/dashboard', { replace: true });
+    onSubmit: async (e) => {
+      const d = {
+        username: e.username,
+        password: e.password
+      }
+      try {
+        const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}auth/connect`, d)
+        console.log(data)
+        setError(data.errorMsgs)
+        if (data.result === "Success") {
+          sessionStorage.setItem("token", data.token)
+          window.location.reload(true);
+        }
+      } catch (error) {
+        console.log(error)
+      }
+      // navigate('/dashboard', { replace: true });
     },
   });
 
@@ -71,7 +88,9 @@ export default function LoginForm() {
             helperText={touched.password && errors.password}
           />
         </Stack>
-
+        {error.length > 0 && (<Typography variant="p" sx={{ color: "red" }}>
+          {error}
+        </Typography>)}
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>
           <FormControlLabel
             control={<Checkbox {...getFieldProps('remember')} checked={values.remember} />}

@@ -40,7 +40,8 @@ export default function AccountPopover() {
   };
 
   const handleClose = () => {
-    setOpen(null);
+    sessionStorage.removeItem("token")
+    window.location.reload(true);
   };
 
   return (

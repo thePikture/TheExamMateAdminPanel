@@ -21,11 +21,11 @@ import ExamGrade from './pages/ExamGrade';
 
 // ----------------------------------------------------------------------
 
-export default function Router() {
+export default function Router({ loggedIn }) {
   return useRoutes([
     {
       path: '/dashboard',
-      element: <DashboardLayout />,
+      element: loggedIn ? <DashboardLayout /> : <Navigate to="/login" />,
       children: [
         { path: 'app', element: <DashboardApp /> },
         { path: 'student', element: <Student /> },
@@ -43,7 +43,7 @@ export default function Router() {
     },
     {
       path: '/',
-      element: <LogoOnlyLayout />,
+      element: !loggedIn ? <LogoOnlyLayout /> : <Navigate to="/dashboard/app " />,
       children: [
         { path: '/', element: <Navigate to="/dashboard/app" /> },
         { path: 'login', element: <Login /> },

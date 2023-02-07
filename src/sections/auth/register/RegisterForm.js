@@ -1,9 +1,10 @@
+import axios from 'axios';
 import * as Yup from 'yup';
 import { useState } from 'react';
 import { useFormik, Form, FormikProvider } from 'formik';
 import { useNavigate } from 'react-router-dom';
 // material
-import { Stack, TextField, IconButton, InputAdornment } from '@mui/material';
+import { Stack, TextField, IconButton, InputAdornment, Typography } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // component
 import Iconify from '../../../components/Iconify';
@@ -14,10 +15,11 @@ export default function RegisterForm() {
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("")
 
   const RegisterSchema = Yup.object().shape({
     firstName: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('First name required'),
-    lastName: Yup.string().min(2, 'Too Short!').max(50, 'Too Long!').required('Last name required'),
+    mobile: Yup.string().min(10, 'Too Short!').max(10, 'Too Long!').required('Mobile name required'),
     email: Yup.string().email('Email must be a valid email address').required('Email is required'),
     password: Yup.string().required('Password is required'),
   });
@@ -25,13 +27,30 @@ export default function RegisterForm() {
   const formik = useFormik({
     initialValues: {
       firstName: '',
-      lastName: '',
+      mobile: '',
       email: '',
       password: '',
     },
     validationSchema: RegisterSchema,
-    onSubmit: () => {
-      navigate('/dashboard', { replace: true });
+    onSubmit: async (e) => {
+      const d = {
+        Name: e.firstName,
+        EmailId: e.email,
+        MobileNo: e.mobile,
+        Password: e.password
+      }
+      try {
+        const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}auth/register-admin`, d)
+        console.log(data)
+        setError(data.errorMsgs)
+        if (data.result === "Success") {
+          sessionStorage.setItem("token", data.token)
+          window.location.reload(true);
+          // navigate('/dashboard/app');
+        }
+      } catch (error) {
+        console.log(error)
+      }
     },
   });
 
@@ -44,7 +63,7 @@ export default function RegisterForm() {
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
               fullWidth
-              label="First name"
+              label="Name"
               {...getFieldProps('firstName')}
               error={Boolean(touched.firstName && errors.firstName)}
               helperText={touched.firstName && errors.firstName}
@@ -52,10 +71,10 @@ export default function RegisterForm() {
 
             <TextField
               fullWidth
-              label="Last name"
-              {...getFieldProps('lastName')}
-              error={Boolean(touched.lastName && errors.lastName)}
-              helperText={touched.lastName && errors.lastName}
+              label="Mobile"
+              {...getFieldProps('mobile')}
+              error={Boolean(touched.mobile && errors.mobile)}
+              helperText={touched.mobile && errors.mobile}
             />
           </Stack>
 
@@ -87,7 +106,9 @@ export default function RegisterForm() {
             error={Boolean(touched.password && errors.password)}
             helperText={touched.password && errors.password}
           />
-
+          {error.length > 0 && (<Typography variant="p" sx={{ color: "red" }}>
+            {error}
+          </Typography>)}
           <LoadingButton fullWidth size="large" type="submit" variant="contained" loading={isSubmitting}>
             Register
           </LoadingButton>

@@ -1,0 +1,235 @@
+import PropTypes from 'prop-types';
+// material
+import {
+  Stack,
+  Select,
+  Toolbar, Tooltip, IconButton, Typography, OutlinedInput, InputAdornment,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Box,
+  Button,
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
+// component
+import Iconify from '../../../components/Iconify';
+
+// ----------------------------------------------------------------------
+
+const RootStyle = styled(Toolbar)(({ theme }) => ({
+  // height: 130,
+  display: 'flex',
+  flexWrap: 'wrap',
+  // justifyContent: 'space-between',
+  padding: theme.spacing(0, 1, 0, 3),
+}));
+
+const SearchStyle = styled(OutlinedInput)(({ theme }) => ({
+  width: 240,
+  transition: theme.transitions.create(['box-shadow', 'width'], {
+    easing: theme.transitions.easing.easeInOut,
+    duration: theme.transitions.duration.shorter,
+  }),
+  '&.Mui-focused': { width: 320, boxShadow: theme.customShadows.z8 },
+  '& fieldset': {
+    borderWidth: `1px !important`,
+    borderColor: `${theme.palette.grey[500_32]} !important`,
+  },
+}));
+
+// ----------------------------------------------------------------------
+
+UserListToolbar.propTypes = {
+  numSelected: PropTypes.number,
+  filterName: PropTypes.string,
+  onFilterName: PropTypes.func,
+};
+
+export default function UserListToolbar({ numSelected, filterName, onFilterName, state, district, taluk, school, board, grade, search }) {
+  return (
+    <RootStyle
+      sx={{
+        ...(numSelected > 0 && {
+          color: 'primary.main',
+          bgcolor: 'primary.lighter',
+        }),
+      }}
+    >
+      {numSelected > 0 ? (
+        <Typography component="div" variant="subtitle1">
+          {numSelected} selected
+        </Typography>
+      ) : (
+        <SearchStyle
+          sx={{ margin: "7px" }}
+          fullWidth
+          value={filterName}
+          onChange={onFilterName}
+          placeholder="Search user..."
+          startAdornment={
+            <InputAdornment position="start">
+              <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled', width: 20, height: 20 }} />
+            </InputAdornment>
+          }
+        />
+      )}
+
+      {numSelected > 0 ? (
+        <Typography component="div" variant="subtitle1">
+          {numSelected} selected
+        </Typography>
+      ) : (
+        <Box sx={{ minWidth: 170, margin: "7px" }}>
+          {state && (
+            <FormControl fullWidth>
+              <InputLabel id="category">State</InputLabel>
+              <Select
+                labelId="category"
+                id="demo-simple-select"
+                label="State"
+              >
+                <MenuItem value={'1'}>1</MenuItem>
+                <MenuItem value={'1'}>2</MenuItem>
+                <MenuItem value={'1'}>3</MenuItem>
+                <MenuItem value={'1'}>4</MenuItem>
+              </Select>
+            </FormControl>
+          )}
+        </Box>
+      )}
+
+      {numSelected > 0 ? (
+        <Typography component="div" variant="subtitle1">
+          {numSelected} selected
+        </Typography>
+      ) : (
+        <Box sx={{ minWidth: 170, margin: "7px" }}>
+          {district && (
+            <FormControl fullWidth>
+              <InputLabel id="category">District </InputLabel>
+              <Select
+                labelId="category"
+                id="demo-simple-select"
+                label="District "
+              >
+                <MenuItem value={'1'}>1</MenuItem>
+                <MenuItem value={'1'}>2</MenuItem>
+                <MenuItem value={'1'}>3</MenuItem>
+                <MenuItem value={'1'}>4</MenuItem>
+              </Select>
+            </FormControl>
+          )}
+        </Box>
+      )}
+
+      {numSelected > 0 ? (
+        <Typography component="div" variant="subtitle1">
+          {numSelected} selected
+        </Typography>
+      ) : (
+        <Box sx={{ minWidth: 170, margin: "7px" }}>
+          {taluk && (
+            <FormControl fullWidth>
+              <InputLabel id="category">Taluk</InputLabel>
+              <Select
+                labelId="category"
+                id="demo-simple-select"
+                label="Taluk"
+              >
+                <MenuItem value={'1'}>1</MenuItem>
+                <MenuItem value={'1'}>2</MenuItem>
+                <MenuItem value={'1'}>3</MenuItem>
+                <MenuItem value={'1'}>4</MenuItem>
+              </Select>
+            </FormControl>
+          )}
+        </Box>
+      )}
+
+      {numSelected > 0 ? (
+        <Typography component="div" variant="subtitle1">
+          {numSelected} selected
+        </Typography>
+      ) : (
+        <Box sx={{ minWidth: 170, margin: "7px" }}>
+          {school && (
+            <FormControl fullWidth>
+              <InputLabel id="category">School</InputLabel>
+              <Select
+                labelId="category"
+                id="demo-simple-select"
+                label="School"
+              >
+                <MenuItem value={'1'}>1</MenuItem>
+                <MenuItem value={'1'}>2</MenuItem>
+                <MenuItem value={'1'}>3</MenuItem>
+                <MenuItem value={'1'}>4</MenuItem>
+              </Select>
+            </FormControl>
+          )}
+        </Box>
+      )}
+
+      {numSelected > 0 ? (
+        <Typography component="div" variant="subtitle1">
+          {numSelected} selected
+        </Typography>
+      ) : (
+        <Box sx={{ minWidth: 170, margin: "7px" }}>
+          {board && (
+            <FormControl fullWidth>
+              <InputLabel id="category">Board</InputLabel>
+              <Select
+                labelId="category"
+                id="demo-simple-select"
+                label="Board"
+              >
+                <MenuItem value={'1'}>1</MenuItem>
+                <MenuItem value={'1'}>2</MenuItem>
+                <MenuItem value={'1'}>3</MenuItem>
+                <MenuItem value={'1'}>4</MenuItem>
+              </Select>
+            </FormControl>
+          )}
+        </Box>
+      )}
+
+      {numSelected > 0 ? (
+        <Typography component="div" variant="subtitle1">
+          {numSelected} selected
+        </Typography>
+      ) : (
+        <Box sx={{ minWidth: 170, margin: "7px" }}>
+          {grade && (
+            <FormControl fullWidth>
+              <InputLabel id="category">Grade</InputLabel>
+              <Select
+                labelId="category"
+                id="demo-simple-select"
+                label="Grade"
+              >
+                <MenuItem value={'1'}>1</MenuItem>
+                <MenuItem value={'1'}>2</MenuItem>
+                <MenuItem value={'1'}>3</MenuItem>
+                <MenuItem value={'1'}>4</MenuItem>
+              </Select>
+            </FormControl>
+          )}
+        </Box>
+      )}
+
+      {numSelected > 0 ? (
+        <Typography component="div" variant="subtitle1">
+          {numSelected} selected
+        </Typography>
+      ) : (
+        <Box sx={{ minWidth: 170, margin: "7px" }}>
+          {search && (
+            <Button type='submit' variant="contained" size='large'>Search</Button>
+          )}
+        </Box>
+      )}
+
+    </RootStyle>
+  );
+}

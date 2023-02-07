@@ -1,6 +1,7 @@
+import axios from 'axios';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 // material
 import {
@@ -75,7 +76,7 @@ function applySortFilter(array, comparator, query) {
     return a[1] - b[1];
   });
   if (query) {
-    return filter(array, (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+    return filter(array, (_user) => _user.stateName.toLowerCase().indexOf(query.toLowerCase()) !== -1);
   }
   return stabilizedThis.map((el) => el[0]);
 }
@@ -94,6 +95,12 @@ export default function Student() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [openModal, setOpenModal] = useState(false);
+  const [stateId, setStateId] = useState("")
+  const [stateCode, setStateCode] = useState("")
+  const [stateName, setStateName] = useState("")
+  const [allField, setAllField] = useState("")
+  const [token, setToken] = useState("")
+  const [allStates, setAllStates] = useState([])
 
   const state = false;
   const district = false;
@@ -104,26 +111,7 @@ export default function Student() {
   const search = false;
   const add = true;
 
-  function createData(id, stateCode, state) {
-    return { id, stateCode, state };
-  }
-  const rows = [
-    createData('1', 'IN', 'India'),
-    createData('1', 'CN', 'China'),
-    createData('1', 'IT', 'Italy'),
-    createData('1', 'US', 'United States'),
-    createData('1', 'CA', 'Canada'),
-    createData('1', 'AU', 'Australia'),
-    createData('1', 'DE', 'Germany'),
-    createData('1', 'IE', 'Ireland'),
-    createData('1', 'MX', 'Mexico'),
-    createData('1', 'JP', 'Japan'),
-    createData('1', 'FR', 'France'),
-    createData('1', 'GB', 'United Kingdom'),
-    createData('1', 'RU', 'Russia'),
-    createData('1', 'NG', 'Nigeria'),
-    createData('1', 'BR', 'Brazil'),
-  ];
+
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -133,7 +121,7 @@ export default function Student() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = rows.map((n) => n.name);
+      const newSelecteds = allStates.map((n) => n.name);
       setSelected(newSelecteds);
       return;
     }
@@ -172,18 +160,68 @@ export default function Student() {
     setFilterName(event.target.value);
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - allStates.length) : 0;
 
-  const filteredUsers = applySortFilter(rows, getComparator(order, orderBy), filterName);
+  const filteredUsers = applySortFilter(allStates, getComparator(order, orderBy), filterName);
 
   const isUserNotFound = filteredUsers.length === 0;
+
+  useEffect(() => {
+    const tok = sessionStorage.getItem("token")
+    if (tok !== null || tok !== undefined) {
+      setToken(tok)
+      getAllState(tok)
+    }
+  }, [])
+
+  const addingState = async (e) => {
+    e.preventDefault();
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": 'application/json',
+    }
+    const d = {
+      StateId: stateId,
+      StateCode: stateCode,
+      StateName: stateName
+    }
+    if (stateId === "" || stateCode === "" || stateName === "") {
+      setAllField("Please fill all required fields")
+    } else {
+      setAllField("")
+      try {
+        const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}Geo/save-State`, d, { headers: h });
+        console.log(data)
+        if (data.result === "Success") {
+          setOpenModal(false)
+          getAllState(token)
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    }
+  }
+
+  const getAllState = async (token) => {
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": 'application/json',
+    }
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_DOMAIN_NAME}Geo/get-State-all`, { headers: h })
+      console.log(data)
+      setAllStates(data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   return (
     <Page title="User">
       <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1}>
           <Typography variant="h4" gutterBottom>
-            Board
+            State
           </Typography>
           {/* <Button variant="contained" component={RouterLink} to="#" startIcon={<Iconify icon="eva:plus-fill" />}>
             New User
@@ -209,22 +247,33 @@ export default function Student() {
 
           <div>
             <Dialog fullWidth open={openModal} onClose={() => setOpenModal(false)}>
-              <DialogTitle>State</DialogTitle>
-              <DialogContent>
-                <Box sx={{ margin: '12px' }}>
-                  <TextField fullWidth id="outlined-basic" label="State Id" variant="outlined" />
-                </Box>
-                <Box sx={{ margin: '12px' }}>
-                  <TextField fullWidth id="outlined-basic" label="State Code" variant="outlined" />
-                </Box>
-                <Box sx={{ margin: '12px' }}>
-                  <TextField fullWidth id="outlined-basic" label="State Name" variant="outlined" />
-                </Box>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={() => setOpenModal(false)}>Cancel</Button>
-                <Button onClick={() => setOpenModal(false)}>Add</Button>
-              </DialogActions>
+              <form onSubmit={addingState}>
+                <DialogTitle>State</DialogTitle>
+                <DialogContent>
+                  <Box sx={{ margin: '12px' }}>
+                    <TextField fullWidth id="outlined-basic" label="State Id" variant="outlined"
+                      onChange={(e) => setStateId(e.target.value)}
+                    />
+                  </Box>
+                  <Box sx={{ margin: '12px' }}>
+                    <TextField fullWidth id="outlined-basic" label="State Code" variant="outlined"
+                      onChange={(e) => setStateCode(e.target.value)}
+                    />
+                  </Box>
+                  <Box sx={{ margin: '12px' }}>
+                    <TextField fullWidth id="outlined-basic" label="State Name" variant="outlined"
+                      onChange={(e) => setStateName(e.target.value)}
+                    />
+                  </Box>
+                  {allField.length > 0 && <Typography sx={{ color: 'red' }} variant="p" gutterBottom>
+                    {allField}
+                  </Typography>}
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setOpenModal(false)}>Cancel</Button>
+                  <Button type='submit'>Add</Button>
+                </DialogActions>
+              </form>
             </Dialog>
           </div>
 
@@ -235,19 +284,19 @@ export default function Student() {
                   order={order}
                   orderBy={orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={USERLIST.length}
+                  rowCount={allStates.length}
                   numSelected={selected.length}
                   onRequestSort={handleRequestSort}
                   onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, stateCode, state } = row;
+                    const { stateId, stateCode, stateName } = row;
                     const isItemSelected = selected.indexOf(state) !== -1;
                     return (
                       <TableRow
                         hover
-                        key={id}
+                        key={stateId}
                         tabIndex={-1}
                         role="checkbox"
                         selected={isItemSelected}
@@ -263,9 +312,9 @@ export default function Student() {
                             </Typography>
                           </Stack>
                         </TableCell> */}
-                        <TableCell align="left">{id}</TableCell>
+                        <TableCell align="left">{stateId}</TableCell>
                         <TableCell align="left">{stateCode}</TableCell>
-                        <TableCell align="left">{state}</TableCell>
+                        <TableCell align="left">{stateName}</TableCell>
                         {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
                         <TableCell align="left">
                           <Label variant="ghost" color={(status === 'banned' && 'error') || 'success'}>
@@ -298,7 +347,7 @@ export default function Student() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={USERLIST.length}
+            count={allStates.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

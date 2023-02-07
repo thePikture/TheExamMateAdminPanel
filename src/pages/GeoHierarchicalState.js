@@ -1,156 +1,311 @@
-import Paper from '@mui/material/Paper';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import React, { useState } from 'react';
-import Button from '@mui/material/Button';
-import ButtonGroup from '@mui/material/ButtonGroup';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
+import { filter } from 'lodash';
+import { sentenceCase } from 'change-case';
+import { useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
+// material
+import {
+  Card,
+  Table,
+  Stack,
+  Avatar,
+  Button,
+  Checkbox,
+  TableRow,
+  TableBody,
+  TableCell,
+  Container,
+  Typography,
+  TableContainer,
+  TablePagination,
+  Box,
+  TextField,
+  FormControl,
+  Input,
+  Select,
+  MenuItem,
+  InputLabel,
+} from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+// components
+import Page from '../components/Page';
+import Label from '../components/Label';
+import Scrollbar from '../components/Scrollbar';
+import Iconify from '../components/Iconify';
+import SearchNotFound from '../components/SearchNotFound';
+import { UserListHead, UserListToolbar, UserMoreMenu } from '../sections/@dashboard/user';
 
-const columns = [{ id: 'state', label: 'State', minWidth: 170 }];
+// mock
+import USERLIST from '../_mock/user';
 
-function createData(state, board, population, size) {
-    const density = population / size;
-    return { state, board, population, size, density };
-}
+// ----------------------------------------------------------------------
 
-const rows = [
-    createData('India'),
-    createData('China'),
-    createData('Italy'),
-    createData('United States'),
-    createData('Canada'),
-    createData('Australia'),
-    createData('Germany'),
-    createData('Ireland'),
-    createData('Mexico'),
-    createData('Japan'),
-    createData('France'),
-    createData('United Kingdom'),
-    createData('Russia'),
-    createData('Nigeria'),
-    createData('Brazil'),
+const TABLE_HEAD = [
+  { id: 'stateId', label: 'State Id', alignRight: false },
+  { id: 'stateCode', label: 'State Code', alignRight: false },
+  { id: 'stateName', label: 'State Name', alignRight: false },
+  { id: '' },
 ];
 
-export default function GeoHierarchicalState() {
-    const [openState, setOpenState] = useState(false);
-    const [page, setPage] = React.useState(0);
-    const [rowsPerPage, setRowsPerPage] = React.useState(10);
+// ----------------------------------------------------------------------
 
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
+function descendingComparator(a, b, orderBy) {
+  if (b[orderBy] < a[orderBy]) {
+    return -1;
+  }
+  if (b[orderBy] > a[orderBy]) {
+    return 1;
+  }
+  return 0;
+}
 
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(+event.target.value);
-        setPage(0);
-    };
+function getComparator(order, orderBy) {
+  return order === 'desc'
+    ? (a, b) => descendingComparator(a, b, orderBy)
+    : (a, b) => -descendingComparator(a, b, orderBy);
+}
 
-    return (
-        <>
-            <Box sx={{ paddingLeft: '20px', paddingRight: '20px' }}>
-                <Typography variant="h5" sx={{ paddingBottom: '15px' }}>
-                    State{' '}
-                </Typography>
-                <Container>
-                    <Box sx={{ background: 'white', borderRadius: '13px', padding: '15px' }}>
-                        <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
-                            <Box
-                                sx={{
-                                    width: '100%',
-                                    marginLeft: '20px',
-                                    marginTop: '20px',
-                                    display: 'flex',
-                                    justifyContent: 'flex-end',
-                                }}
-                            >
-                                <Box sx={{ marginTop: '10px', marginRight: '20px' }}>
-                                    <Button
-                                        sx={{ padding: '15px', marginTop: '10px' }}
-                                        variant="outlined"
-                                        onClick={() => setOpenState(true)}
-                                    >
-                                        Add
-                                    </Button>
-                                </Box>
-                            </Box>
-                            <div>
-                                <Dialog fullWidth open={openState} onClose={() => setOpenState(false)}>
-                                    <DialogTitle>State</DialogTitle>
-                                    <DialogContent>
-                                        <Box sx={{ margin: '12px' }}>
-                                            <TextField fullWidth id="outlined-basic" label="State" variant="outlined" />
-                                        </Box>
-                                    </DialogContent>
-                                    <DialogActions>
-                                        <Button onClick={() => setOpenState(false)}>Cancel</Button>
-                                        <Button onClick={() => setOpenState(false)}>Add</Button>
-                                    </DialogActions>
-                                </Dialog>
-                            </div>
-                        </Grid>
-                        <Box sx={{ margin: '20px' }}>
-                            {' '}
-                            <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-                                <TableContainer sx={{ maxHeight: 380 }}>
-                                    <Table stickyHeader aria-label="sticky table">
-                                        <TableHead>
-                                            <TableRow>
-                                                {columns.map((column) => (
-                                                    <TableCell key={column.id} align={column.align} style={{ minWidth: column.minWidth }}>
-                                                        {column.label}
-                                                    </TableCell>
-                                                ))}
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                                return (
-                                                    <TableRow hover role="checkbox" tabIndex={-1} key={row.code}>
-                                                        {columns.map((column) => {
-                                                            const value = row[column.id];
-                                                            return (
-                                                                <TableCell key={column.id} align={column.align}>
-                                                                    {column.format && typeof value === 'number' ? column.format(value) : value}
-                                                                </TableCell>
-                                                            );
-                                                        })}
-                                                    </TableRow>
-                                                );
-                                            })}
-                                        </TableBody>
-                                    </Table>
-                                </TableContainer>
-                                <TablePagination
-                                    rowsPerPageOptions={[10, 25, 100]}
-                                    component="div"
-                                    count={rows.length}
-                                    rowsPerPage={rowsPerPage}
-                                    page={page}
-                                    onPageChange={handleChangePage}
-                                    onRowsPerPageChange={handleChangeRowsPerPage}
-                                />
-                            </Paper>
-                        </Box>{' '}
-                    </Box>
-                </Container>
-            </Box>
-        </>
-    );
+function applySortFilter(array, comparator, query) {
+  const stabilizedThis = array.map((el, index) => [el, index]);
+  stabilizedThis.sort((a, b) => {
+    const order = comparator(a[0], b[0]);
+    if (order !== 0) return order;
+    return a[1] - b[1];
+  });
+  if (query) {
+    return filter(array, (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+  }
+  return stabilizedThis.map((el) => el[0]);
+}
+
+export default function Student() {
+  const [page, setPage] = useState(0);
+
+  const [order, setOrder] = useState('asc');
+
+  const [selected, setSelected] = useState([]);
+
+  const [orderBy, setOrderBy] = useState('name');
+
+  const [filterName, setFilterName] = useState('');
+
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  const [openModal, setOpenModal] = useState(false);
+
+  const state = false;
+  const district = false;
+  const taluk = false;
+  const school = false;
+  const board = false;
+  const grade = false;
+  const search = false;
+  const add = true;
+
+  function createData(id, stateCode, state) {
+    return { id, stateCode, state };
+  }
+  const rows = [
+    createData('1', 'IN', 'India'),
+    createData('1', 'CN', 'China'),
+    createData('1', 'IT', 'Italy'),
+    createData('1', 'US', 'United States'),
+    createData('1', 'CA', 'Canada'),
+    createData('1', 'AU', 'Australia'),
+    createData('1', 'DE', 'Germany'),
+    createData('1', 'IE', 'Ireland'),
+    createData('1', 'MX', 'Mexico'),
+    createData('1', 'JP', 'Japan'),
+    createData('1', 'FR', 'France'),
+    createData('1', 'GB', 'United Kingdom'),
+    createData('1', 'RU', 'Russia'),
+    createData('1', 'NG', 'Nigeria'),
+    createData('1', 'BR', 'Brazil'),
+  ];
+
+  const handleRequestSort = (event, property) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
+
+  const handleSelectAllClick = (event) => {
+    if (event.target.checked) {
+      const newSelecteds = rows.map((n) => n.name);
+      setSelected(newSelecteds);
+      return;
+    }
+    setSelected([]);
+  };
+
+  const handleModal = () => {
+    setOpenModal(true);
+  };
+
+  const handleClick = (event, name) => {
+    const selectedIndex = selected.indexOf(name);
+    let newSelected = [];
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(selected, name);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(selected.slice(1));
+    } else if (selectedIndex === selected.length - 1) {
+      newSelected = newSelected.concat(selected.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
+    }
+    setSelected(newSelected);
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const handleFilterByName = (event) => {
+    setFilterName(event.target.value);
+  };
+
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+
+  const filteredUsers = applySortFilter(rows, getComparator(order, orderBy), filterName);
+
+  const isUserNotFound = filteredUsers.length === 0;
+
+  return (
+    <Page title="User">
+      <Container>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1}>
+          <Typography variant="h4" gutterBottom>
+            Board
+          </Typography>
+          {/* <Button variant="contained" component={RouterLink} to="#" startIcon={<Iconify icon="eva:plus-fill" />}>
+            New User
+          </Button> */}
+        </Stack>
+
+        <Card>
+          <UserListToolbar
+            numSelected={selected.length}
+            filterName={filterName}
+            onFilterName={handleFilterByName}
+            state={state}
+            district={district}
+            taluk={taluk}
+            school={school}
+            board={board}
+            grade={grade}
+            search={search}
+            add={add}
+            openModal={openModal}
+            handleModal={handleModal}
+          />
+
+          <div>
+            <Dialog fullWidth open={openModal} onClose={() => setOpenModal(false)}>
+              <DialogTitle>State</DialogTitle>
+              <DialogContent>
+                <Box sx={{ margin: '12px' }}>
+                  <TextField fullWidth id="outlined-basic" label="State Id" variant="outlined" />
+                </Box>
+                <Box sx={{ margin: '12px' }}>
+                  <TextField fullWidth id="outlined-basic" label="State Code" variant="outlined" />
+                </Box>
+                <Box sx={{ margin: '12px' }}>
+                  <TextField fullWidth id="outlined-basic" label="State Name" variant="outlined" />
+                </Box>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setOpenModal(false)}>Cancel</Button>
+                <Button onClick={() => setOpenModal(false)}>Add</Button>
+              </DialogActions>
+            </Dialog>
+          </div>
+
+          <Scrollbar>
+            <TableContainer sx={{ minWidth: 800 }}>
+              <Table>
+                <UserListHead
+                  order={order}
+                  orderBy={orderBy}
+                  headLabel={TABLE_HEAD}
+                  rowCount={USERLIST.length}
+                  numSelected={selected.length}
+                  onRequestSort={handleRequestSort}
+                  onSelectAllClick={handleSelectAllClick}
+                />
+                <TableBody>
+                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                    const { id, stateCode, state } = row;
+                    const isItemSelected = selected.indexOf(state) !== -1;
+                    return (
+                      <TableRow
+                        hover
+                        key={id}
+                        tabIndex={-1}
+                        role="checkbox"
+                        selected={isItemSelected}
+                        aria-checked={isItemSelected}
+                      >
+                        <TableCell padding="checkbox">
+                          {/* <Checkbox checked={isItemSelected} onChange={(event) => handleClick(event, name)} /> */}
+                        </TableCell>
+                        {/* <TableCell component="th" scope="row" padding="none">
+                          <Stack direction="row" alignItems="center" spacing={2}>
+                            <Typography variant="subtitle2" noWrap>
+                              {id}
+                            </Typography>
+                          </Stack>
+                        </TableCell> */}
+                        <TableCell align="left">{id}</TableCell>
+                        <TableCell align="left">{stateCode}</TableCell>
+                        <TableCell align="left">{state}</TableCell>
+                        {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
+                        <TableCell align="left">
+                          <Label variant="ghost" color={(status === 'banned' && 'error') || 'success'}>
+                            {sentenceCase(status)}
+                          </Label>
+                        </TableCell> */}
+                      </TableRow>
+                    );
+                  })}
+                  {emptyRows > 0 && (
+                    <TableRow style={{ height: 53 * emptyRows }}>
+                      <TableCell colSpan={6} />
+                    </TableRow>
+                  )}
+                </TableBody>
+
+                {isUserNotFound && (
+                  <TableBody>
+                    <TableRow>
+                      <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                        <SearchNotFound searchQuery={filterName} />
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                )}
+              </Table>
+            </TableContainer>
+          </Scrollbar>
+
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={USERLIST.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </Card>
+      </Container>
+    </Page>
+  );
 }

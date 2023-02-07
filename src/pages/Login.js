@@ -68,6 +68,14 @@ export default function Login() {
         <HeaderStyle>
           {/* <Logo /> */}
           <img src={logo} alt="logo" width={150} />
+          {smUp && (
+            <Typography variant="h5" sx={{ mt: { md: -2 } }}>
+              Don’t have an account? {''}
+              <Link variant="h5" component={RouterLink} to="/register">
+                Register
+              </Link>
+            </Typography>
+          )}
         </HeaderStyle>
 
         <Container maxWidth="sm">

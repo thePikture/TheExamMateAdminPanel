@@ -1,234 +1,410 @@
-import { useTheme } from '@mui/material/styles';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Typography from '@mui/material/Typography';
-import { Container } from '@mui/material';
-import Paper from '@mui/material/Paper';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import Box from '@mui/material/Box';
-import React, { useState } from 'react';
-import Button from '@mui/material/Button';
-import ButtonGroup from '@mui/material/ButtonGroup';
-import InputLabel from '@mui/material/InputLabel';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
+import axios from 'axios';
+import { filter } from 'lodash';
+import { sentenceCase } from 'change-case';
+import { useEffect, useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
+// material
+import {
+  Card,
+  Table,
+  Stack,
+  Avatar,
+  Button,
+  Checkbox,
+  TableRow,
+  TableBody,
+  TableCell,
+  Container,
+  Typography,
+  TableContainer,
+  TablePagination,
+  Box,
+  TextField,
+  FormControl,
+  Input,
+  Select,
+  MenuItem,
+  InputLabel,
+} from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+// components
+import Page from '../components/Page';
+import Label from '../components/Label';
+import Scrollbar from '../components/Scrollbar';
+import Iconify from '../components/Iconify';
+import SearchNotFound from '../components/SearchNotFound';
+import { UserListHead, UserListToolbar, UserMoreMenu } from '../sections/@dashboard/user';
 
-const columns = [
-    { id: 'state', label: 'State', minWidth: 170 },
-    { id: 'district', label: 'District', minWidth: 100 },
-    { id: 'taluk', label: 'Taluk', minWidth: 100 },
+// mock
+import USERLIST from '../_mock/user';
+
+// ----------------------------------------------------------------------
+
+const TABLE_HEAD = [
+  { id: 'stateId', label: 'State Id', alignRight: false },
+  { id: 'stateCode', label: 'State Code', alignRight: false },
+  { id: 'stateName', label: 'State Name', alignRight: false },
+  { id: 'districtCode', label: 'District Code', alignRight: false },
+  { id: 'districtName', label: 'District Name', alignRight: false },
+  { id: 'talukCode', label: 'Taluk Code', alignRight: false },
+  { id: 'talukName', label: 'Taluk Name', alignRight: false },
 ];
-function createData(state, board, population, size) {
-    const density = population / size;
-    return { state, board, population, size, density };
+
+// ----------------------------------------------------------------------
+
+function descendingComparator(a, b, orderBy) {
+  if (b[orderBy] < a[orderBy]) {
+    return -1;
+  }
+  if (b[orderBy] > a[orderBy]) {
+    return 1;
+  }
+  return 0;
 }
-const rows = [
-    createData('India', 'IN', ''),
-    createData('China', 'CN', ''),
-    createData('Italy', 'IT', ''),
-    createData('United States', 'US', ''),
-    createData('Canada', 'CA', ''),
-    createData('Australia', 'AU', ''),
-    createData('Germany', 'DE', ''),
-    createData('Ireland', 'IE', ''),
-    createData('Mexico', 'MX', ''),
-    createData('Japan', 'JP', ''),
-    createData('France', 'FR', ''),
-    createData('United Kingdom', 'GB', ''),
-    createData('Russia', 'RU', ''),
-    createData('Nigeria', 'NG', ''),
-    createData('Brazil', 'BR', ''),
-];
 
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-    PaperProps: {
-        style: {
-            maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-            width: 200,
-        },
-    },
-};
+function getComparator(order, orderBy) {
+  return order === 'desc'
+    ? (a, b) => descendingComparator(a, b, orderBy)
+    : (a, b) => -descendingComparator(a, b, orderBy);
+}
 
-const state = [
-    'Oliver ',
-    'Van ',
-    'April Tucker',
-    'Ralph Hubbard',
-    'Omar Alexander',
-    'Carlos Abbott',
-    'Miriam Wagner',
-    'Bradley Wilkerson',
-    'Virginia Andrews',
-    'Kelly Snyder',
-];
+function applySortFilter(array, comparator, query) {
+  const stabilizedThis = array.map((el, index) => [el, index]);
+  stabilizedThis.sort((a, b) => {
+    const order = comparator(a[0], b[0]);
+    if (order !== 0) return order;
+    return a[1] - b[1];
+  });
+  if (query) {
+    return filter(array, (_user) => _user.districtName.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+  }
+  return stabilizedThis.map((el) => el[0]);
+}
 
-export default function GeoHierarchicalTaluk() {
-    const theme = useTheme();
-    const [stateName, setStateName] = React.useState([]);
+export default function Student() {
+  const [page, setPage] = useState(0);
 
-    const handleChange = (event) => {
-        const {
-            target: { value },
-        } = event;
-        setStateName(
-            // On autofill we get a stringified value.
-            typeof value === 'string' ? value.split(',') : value
-        );
+  const [order, setOrder] = useState('asc');
+
+  const [selected, setSelected] = useState([]);
+
+  const [orderBy, setOrderBy] = useState('name');
+
+  const [filterName, setFilterName] = useState('');
+
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  const [openModal, setOpenModal] = useState(false);
+  const [token, setToken] = useState('');
+  const [allStates, setAllStates] = useState([]);
+
+  const [allDistricts, setAllDistricts] = useState([]);
+  const [allField, setAllField] = useState('');
+  const [stateId, setStateId] = useState('');
+  const [districtCode, setDistrictsCode] = useState('');
+  const [districtName, setDistrictName] = useState('');
+  const [selectedStateId, setSelectedStateId] = useState('');
+
+  const state = true;
+  const district = true;
+  const taluk = false;
+  const school = false;
+  const board = false;
+  const grade = false;
+  const search = false;
+  const add = true;
+
+  const handleRequestSort = (event, property) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
+
+  const handleSelectAllClick = (event) => {
+    if (event.target.checked) {
+      const newSelecteds = allDistricts.map((n) => n.name);
+      setSelected(newSelecteds);
+      return;
+    }
+    setSelected([]);
+  };
+
+  const handleModal = () => {
+    setOpenModal(true);
+  };
+
+  const handleClick = (event, name) => {
+    const selectedIndex = selected.indexOf(name);
+    let newSelected = [];
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(selected, name);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(selected.slice(1));
+    } else if (selectedIndex === selected.length - 1) {
+      newSelected = newSelected.concat(selected.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
+    }
+    setSelected(newSelected);
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const handleFilterByName = (event) => {
+    setFilterName(event.target.value);
+  };
+
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - allDistricts.length) : 0;
+
+  const filteredUsers = applySortFilter(allDistricts, getComparator(order, orderBy), filterName);
+
+  const isUserNotFound = filteredUsers.length === 0;
+
+  useEffect(() => {
+    const tok = sessionStorage.getItem('token');
+    if (tok !== null || tok !== undefined) {
+      setToken(tok);
+      getAllState(tok);
+    }
+  }, []);
+
+  const getAllState = async (token) => {
+    const h = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     };
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_DOMAIN_NAME}Geo/get-State-all`, { headers: h });
+      console.log(data);
+      setAllStates(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-    const [openTaluk, setOpenTaluk] = useState(false);
-    const [page, setPage] = React.useState(0);
-    const [rowsPerPage, setRowsPerPage] = React.useState(10);
-
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
+  const handleSearch = async (stateId) => {
+    const h = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     };
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_DOMAIN_NAME}Geo/get-District-bystateId/${stateId}`, {
+        headers: h,
+      });
+      console.log(data);
+      // setAllStates(data)
+      setAllDistricts(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const handleSearchTaluk = async (districtId) => {
+    console.log(districtId);
+  };
 
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(+event.target.value);
-        setPage(0);
+  const addingDistrict = async (e) => {
+    e.preventDefault();
+    const h = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     };
+    const d = {
+      StateId: stateId,
+      DistrictCode: districtCode,
+      DistrictName: districtName,
+    };
+    if (stateId === '' || districtCode === '' || districtName === '') {
+      setAllField('Please fill all required fields');
+    } else {
+      setAllField('');
+      try {
+        const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}Geo/save-District`, d, { headers: h });
+        console.log(data);
+        if (data.result === 'Success') {
+          setOpenModal(false);
+          handleSearch(stateId);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
 
-    return (
-        <div>
-            <Typography variant="h5" sx={{ paddingBottom: '15px', marginLeft: '20px' }}>
-                Taluk{' '}
-            </Typography>
-            <Container sx={{ background: 'white', borderRadius: '13px', padding: '15px' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Box>
-                        <FormControl sx={{ m: 1, width: 200 }}>
-                            <InputLabel id="demo-multiple-name-label">State</InputLabel>
-                            <Select
-                                labelId="demo-multiple-name-label"
-                                id="demo-multiple-name"
-                                multiple
-                                value={stateName}
-                                onChange={handleChange}
-                                input={<OutlinedInput label="State" />}
-                                MenuProps={MenuProps}
-                            >
-                                {state.map((state) => (
-                                    <MenuItem key={state} value={state}>
-                                        {state}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                        <FormControl sx={{ m: 1, width: 200 }}>
-                            <InputLabel id="demo-multiple-name-label">District</InputLabel>
-                            <Select
-                                labelId="demo-multiple-name-label"
-                                id="demo-multiple-name"
-                                multiple
-                                value={stateName}
-                                onChange={handleChange}
-                                input={<OutlinedInput label="District" />}
-                                MenuProps={MenuProps}
-                            >
-                                {state.map((state) => (
-                                    <MenuItem key={state} value={state}>
-                                        {state}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </Box>
-                    <Box>
-                        <Button sx={{ padding: '15px', marginTop: '10px' }} variant="outlined" onClick={() => setOpenTaluk(true)}>
-                            Add
-                        </Button>
-                    </Box>
-                </Box>
-                <div>
-                    <Dialog fullWidth open={openTaluk} onClose={() => setOpenTaluk(false)}>
-                        <DialogTitle>Taluk</DialogTitle>
-                        <DialogContent>
-                            <Box sx={{ margin: '12px' }}>
-                                <FormControl fullWidth>
-                                    <InputLabel id="demo-simple-select-label">State</InputLabel>
-                                    <Select labelId="demo-simple-select-label" id="demo-simple-select" label="State">
-                                        <MenuItem value={10}>Ten</MenuItem>
-                                        <MenuItem value={20}>Twenty</MenuItem>
-                                        <MenuItem value={30}>Thirty</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </Box>
-                            <Box sx={{ margin: '12px' }}>
-                                <FormControl fullWidth>
-                                    <InputLabel id="demo-simple-select-label">District</InputLabel>
-                                    <Select labelId="demo-simple-select-label" id="demo-simple-select" label="District">
-                                        <MenuItem value={10}>Ten</MenuItem>
-                                        <MenuItem value={20}>Twenty</MenuItem>
-                                        <MenuItem value={30}>Thirty</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </Box>
-                            <Box sx={{ margin: '12px' }}>
-                                <TextField fullWidth id="outlined-basic" label="Taluk" variant="outlined" />
-                            </Box>
-                        </DialogContent>
-                        <DialogActions>
-                            <Button onClick={() => setOpenTaluk(false)}>Cancel</Button>
-                            <Button onClick={() => setOpenTaluk(false)}>Add</Button>
-                        </DialogActions>
-                    </Dialog>
-                </div>
-                <Paper sx={{ width: '100%', overflow: 'hidden', marginTop: '15px' }}>
-                    <TableContainer sx={{ maxHeight: 380 }}>
-                        <Table stickyHeader aria-label="sticky table">
-                            <TableHead>
-                                <TableRow>
-                                    {columns.map((column) => (
-                                        <TableCell key={column.id} align={column.align} style={{ minWidth: column.minWidth }}>
-                                            {column.label}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                                    return (
-                                        <TableRow hover role="checkbox" tabIndex={-1} key={row.code}>
-                                            {columns.map((column) => {
-                                                const value = row[column.id];
-                                                return (
-                                                    <TableCell key={column.id} align={column.align}>
-                                                        {column.format && typeof value === 'number' ? column.format(value) : value}
-                                                    </TableCell>
-                                                );
-                                            })}
-                                        </TableRow>
-                                    );
-                                })}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                    <TablePagination
-                        rowsPerPageOptions={[10, 25, 100]}
-                        component="div"
-                        count={rows.length}
-                        rowsPerPage={rowsPerPage}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
+  return (
+    <Page title="User">
+      <Container>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1}>
+          <Typography variant="h4" gutterBottom>
+            Taluk
+          </Typography>
+          {/* <Button variant="contained" component={RouterLink} to="#" startIcon={<Iconify icon="eva:plus-fill" />}>
+            New User
+          </Button> */}
+        </Stack>
+
+        <Card>
+          <UserListToolbar
+            numSelected={selected.length}
+            filterName={filterName}
+            onFilterName={handleFilterByName}
+            state={state}
+            district={district}
+            taluk={taluk}
+            school={school}
+            board={board}
+            grade={grade}
+            search={search}
+            add={add}
+            openModal={openModal}
+            handleModal={handleModal}
+            allStates={allStates}
+            handleSearch={handleSearch}
+            allDistricts={allDistricts}
+            handleSearchTaluk={handleSearchTaluk}
+          />
+
+          <div>
+            <Dialog fullWidth open={openModal} onClose={() => setOpenModal(false)}>
+              <form onSubmit={addingDistrict}>
+                <DialogContent>
+                  <DialogTitle>District</DialogTitle>
+                  <Box sx={{ margin: '12px' }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="demo-simple-select-label">State</InputLabel>
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        label="State"
+                        onChange={(e) => setStateId(e.target.value)}
+                      >
+                        {allStates.map((item) => {
+                          return <MenuItem value={item.stateId}>{item.stateName}</MenuItem>;
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  <Box sx={{ margin: '12px' }}>
+                    <TextField
+                      fullWidth
+                      id="outlined-basic"
+                      label="District Code"
+                      variant="outlined"
+                      onChange={(e) => setDistrictsCode(e.target.value)}
                     />
-                </Paper>
-            </Container>
-        </div>
-    );
+                  </Box>
+                  <Box sx={{ margin: '12px' }}>
+                    <TextField
+                      fullWidth
+                      id="outlined-basic"
+                      label="District Name"
+                      variant="outlined"
+                      onChange={(e) => setDistrictName(e.target.value)}
+                    />
+                  </Box>
+                  {allField.length > 0 && (
+                    <Typography sx={{ color: 'red' }} variant="p" gutterBottom>
+                      {allField}
+                    </Typography>
+                  )}
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setOpenModal(false)}>Cancel</Button>
+                  <Button type="submit">Add</Button>
+                </DialogActions>
+              </form>
+            </Dialog>
+          </div>
+
+          <Scrollbar>
+            <TableContainer sx={{ minWidth: 800 }}>
+              <Table>
+                <UserListHead
+                  order={order}
+                  orderBy={orderBy}
+                  headLabel={TABLE_HEAD}
+                  rowCount={allDistricts.length}
+                  numSelected={selected.length}
+                  onRequestSort={handleRequestSort}
+                  onSelectAllClick={handleSelectAllClick}
+                />
+                <TableBody>
+                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                    const { stateId, stateCode, stateName, districtCode, districtName } = row;
+                    const isItemSelected = selected.indexOf(state) !== -1;
+                    return (
+                      <TableRow
+                        hover
+                        key={stateId}
+                        tabIndex={-1}
+                        role="checkbox"
+                        selected={isItemSelected}
+                        aria-checked={isItemSelected}
+                      >
+                        <TableCell padding="checkbox">
+                          {/* <Checkbox checked={isItemSelected} onChange={(event) => handleClick(event, name)} /> */}
+                        </TableCell>
+                        {/* <TableCell component="th" scope="row" padding="none">
+                          <Stack direction="row" alignItems="center" spacing={2}>
+                            <Typography variant="subtitle2" noWrap>
+                              {id}
+                            </Typography>
+                          </Stack>
+                        </TableCell> */}
+                        <TableCell align="left">{stateId}</TableCell>
+                        <TableCell align="left">{stateCode}</TableCell>
+                        <TableCell align="left">{stateName}</TableCell>
+                        <TableCell align="left">{districtCode}</TableCell>
+                        <TableCell align="left">{districtName}</TableCell>
+                        {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
+                        <TableCell align="left">
+                          <Label variant="ghost" color={(status === 'banned' && 'error') || 'success'}>
+                            {sentenceCase(status)}
+                          </Label>
+                        </TableCell> */}
+                      </TableRow>
+                    );
+                  })}
+                  {emptyRows > 0 && (
+                    <TableRow style={{ height: 53 * emptyRows }}>
+                      <TableCell colSpan={6} />
+                    </TableRow>
+                  )}
+                </TableBody>
+
+                {isUserNotFound && (
+                  <TableBody>
+                    <TableRow>
+                      <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                        <SearchNotFound searchQuery={filterName} />
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                )}
+              </Table>
+            </TableContainer>
+          </Scrollbar>
+
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={allDistricts.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </Card>
+      </Container>
+    </Page>
+  );
 }

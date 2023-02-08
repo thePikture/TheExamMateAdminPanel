@@ -102,6 +102,11 @@ export default function ExamSubjectGroup() {
   const [allMediums, setAllMediums] = useState([]);
   const [allGrades, setAllGrades] = useState([]);
   const [allSubjectGroups, setAllSubjectGroups] = useState([]);
+  const [boardId, setBoardId] = useState("")
+  const [mediumId, setMediumId] = useState("")
+  const [gradeId, setGradeId] = useState("")
+  const [subjectGroup, setSubjectGroups] = useState("")
+  const [allField, setAllField] = useState("")
 
   const state = false;
   const district = false;
@@ -236,6 +241,7 @@ export default function ExamSubjectGroup() {
       console.log({ error });
     }
   };
+
   const handleGetSubjectGroup = async (gradeId) => {
     console.log({ gradeId });
     const h = {
@@ -255,6 +261,35 @@ export default function ExamSubjectGroup() {
       console.log({ error });
     }
   };
+
+  const addingSubjectGroup = async (e) => {
+    e.preventDefault()
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    }
+    const d = {
+      BoardId: boardId,
+      MediumId: mediumId,
+      GradeId: gradeId,
+      SubjectGroup: subjectGroup
+    }
+    if (boardId === "" || mediumId === "" || gradeId === "" || subjectGroup === "") {
+      setAllField("Please fill all required fields")
+    } else {
+      setAllField("")
+      try {
+        const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}edu/Save-SubjectGroup`, d, { headers: h })
+        console.log(data)
+        if (data.result === "Success") {
+          setOpenModal(false)
+          handleGetSubjectGroup(gradeId)
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    }
+  }
 
   return (
     <Page title="User">
@@ -295,59 +330,78 @@ export default function ExamSubjectGroup() {
 
           <div>
             <Dialog fullWidth open={openModal} onClose={() => setOpenModal(false)}>
-              <DialogTitle>Grade</DialogTitle>
-              <DialogContent>
-                <Box sx={{ margin: '12px' }}>
-                  <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">Board</InputLabel>
-                    <Select labelId="demo-simple-select-label" id="demo-simple-select" label="State">
-                      {allBoards.map((board, index) => {
-                        return (
-                          <MenuItem key={index} value={board.id}>
-                            {board.boardName}
-                          </MenuItem>
-                        );
-                      })}
-                    </Select>
-                  </FormControl>
-                </Box>
-                <Box sx={{ margin: '12px' }}>
-                  <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">Medium</InputLabel>
-                    <Select labelId="demo-simple-select-label" id="demo-simple-select" label="State">
-                      {allMediums.map((medium, index) => {
-                        return (
-                          <MenuItem key={index} value={medium.id}>
-                            {medium.mediumName}
-                          </MenuItem>
-                        );
-                      })}
-                    </Select>
-                  </FormControl>
-                </Box>
-                <Box sx={{ margin: '12px' }}>
-                  <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">Grade</InputLabel>
-                    <Select labelId="demo-simple-select-label" id="demo-simple-select" label="State">
-                      {allGrades.map((medium, index) => {
-                        return (
-                          <MenuItem key={index} value={medium.id}>
-                            {medium.mediumName}
-                          </MenuItem>
-                        );
-                      })}
-                    </Select>
-                  </FormControl>
-                </Box>
+              <form onSubmit={addingSubjectGroup}>
+                <DialogTitle>Grade</DialogTitle>
+                <DialogContent>
+                  <Box sx={{ margin: '12px' }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="demo-simple-select-label">Board</InputLabel>
+                      <Select labelId="demo-simple-select-label" id="demo-simple-select" label="State"
+                        onChange={(e) => {
+                          setBoardId(e.target.value)
+                          handleBoards(e.target.value)
+                        }}
+                      >
+                        {allBoards.map((board, index) => {
+                          return (
+                            <MenuItem key={index} value={board.id}>
+                              {board.boardName}
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  <Box sx={{ margin: '12px' }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="demo-simple-select-label">Medium</InputLabel>
+                      <Select labelId="demo-simple-select-label" id="demo-simple-select" label="State"
+                        onChange={(e) => {
+                          setMediumId(e.target.value)
+                          handleGetGrade(e.target.value)
+                        }}
+                      >
+                        {allMediums.map((medium, index) => {
+                          return (
+                            <MenuItem key={index} value={medium.id}>
+                              {medium.mediumName}
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  <Box sx={{ margin: '12px' }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="demo-simple-select-label">Grade</InputLabel>
+                      <Select labelId="demo-simple-select-label" id="demo-simple-select" label="State"
+                        onChange={(e) => setGradeId(e.target.value)}
+                      >
+                        {allGrades.map((grade, index) => {
+                          return (
+                            <MenuItem key={index} value={grade.id}>
+                              {grade.grade}
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
 
-                <Box sx={{ margin: '12px' }}>
-                  <TextField fullWidth id="outlined-basic" label="Grade" variant="outlined" />
-                </Box>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={() => setOpenModal(false)}>Cancel</Button>
-                <Button onClick={() => setOpenModal(false)}>Add</Button>
-              </DialogActions>
+                  <Box sx={{ margin: '12px' }}>
+                    <TextField fullWidth id="outlined-basic" label="Subject Group" variant="outlined"
+                      onChange={(e) => setSubjectGroups(e.target.value)}
+                    />
+                  </Box>
+                  {allField.length > 0 && <Typography sx={{ color: 'red' }} variant="p" gutterBottom>
+                    {allField}
+                  </Typography>}
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setOpenModal(false)}>Cancel</Button>
+                  <Button type='submit'>Add</Button>
+                </DialogActions>
+              </form>
             </Dialog>
           </div>
 
@@ -431,6 +485,6 @@ export default function ExamSubjectGroup() {
           />
         </Card>
       </Container>
-    </Page>
+    </Page >
   );
 }

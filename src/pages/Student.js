@@ -82,14 +82,14 @@ export default function Student() {
   const [filterName, setFilterName] = useState('');
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const state = true;
-  const district = true;
-  const taluk = true;
-  const school = true;
-  const board = true;
-  const grade = true;
-  const search = true;
-
+  const [allStates, setAllStates] = useState([]);
+  const state = false;
+  const district = false;
+  const taluk = false;
+  const school = false;
+  const board = false;
+  const grade = false;
+  const search = false;
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';

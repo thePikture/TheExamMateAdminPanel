@@ -176,58 +176,59 @@ export default function NavSection({ navConfig, ...other }) {
             icon: getIcon('eva:shopping-bag-fill'),
           }} active={match} /> <ArrowDropDownIcon />
         </Box>
+
         {geoShow && (<><NavItem item={{
           title: 'State',
           path: '/dashboard/geo-hierarchical-state',
-          icon: getIcon('eva:shopping-bag-fill'),
+          icon: getIcon('mdi:map-marker'),
         }} active={match} />
 
           <NavItem item={{
             title: 'District',
             path: '/dashboard/geo-hierarchical-district',
-            icon: getIcon('eva:shopping-bag-fill'),
+            icon: getIcon('ic:round-zoom-in-map'),
           }} active={match} />
 
           <NavItem item={{
             title: 'Taluk',
             path: '/dashboard/geo-hierarchical-taluk',
-            icon: getIcon('eva:shopping-bag-fill'),
+            icon: getIcon('mdi:map-marker-distance'),
           }} active={match} /></>)}
 
         <Box onClick={() => setExamShow(!examShow)} sx={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
           <NavItem item={{
             title: 'Exam Hierarchical',
             path: '/dashboard/exam-board',
-            icon: getIcon('eva:shopping-bag-fill'),
+            icon: getIcon('healthicons:i-exam-multiple-choice'),
           }} active={match} /> <ArrowDropDownIcon />
         </Box>
         {examShow && (<><NavItem item={{
           title: 'Board',
           path: '/dashboard/exam-board',
-          icon: getIcon('eva:shopping-bag-fill'),
+          icon: getIcon('iconoir:kanban-board'),
         }} active={match} />
 
           <NavItem item={{
             title: 'Medium',
             path: '/dashboard/exam-medium',
-            icon: getIcon('eva:shopping-bag-fill'),
+            icon: getIcon('teenyicons:medium-outline'),
           }} active={match} />
 
           <NavItem item={{
             title: 'Grade',
             path: '/dashboard/exam-grade',
-            icon: getIcon('eva:shopping-bag-fill'),
+            icon: getIcon('carbon:intent-request-upgrade'),
           }} active={match} />
 
           <NavItem item={{
             title: 'SubjectGroup',
             path: '/dashboard/exam-subject-group',
-            icon: getIcon('eva:shopping-bag-fill'),
+            icon: getIcon('emojione-monotone:books'),
           }} active={match} />
           <NavItem item={{
             title: 'Subject',
             path: '/dashboard/exam-subject',
-            icon: getIcon('eva:shopping-bag-fill'),
+            icon: getIcon('material-symbols:menu-book'),
           }} active={match} /></>)}
       </List>
     </Box>

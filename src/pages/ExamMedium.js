@@ -99,6 +99,9 @@ export default function Student() {
   const [allStates, setAllStates] = useState([]);
   const [allBoards, setAllBoards] = useState([]);
   const [allMediums, setAllMediums] = useState([]);
+  const [boardId, setBoardId] = useState("")
+  const [mediumName, setMediumName] = useState("")
+  const [allField, setAllField] = useState("")
 
   const state = false;
   const district = false;
@@ -171,20 +174,6 @@ export default function Student() {
 
   const isUserNotFound = filteredUsers.length === 0;
 
-  const getAllState = async (token) => {
-    const h = {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    };
-    try {
-      const { data } = await axios.get(`${process.env.REACT_APP_DOMAIN_NAME}Geo/get-State-all`, { headers: h });
-      console.log(data);
-      setAllStates(data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   const getAllBoards = async (token) => {
     const h = {
       Authorization: `Bearer ${token}`,
@@ -202,7 +191,7 @@ export default function Student() {
   const handleBoards = async (boardId) => {
     console.log({ boardId });
     const h = {
-      Authorization: `Bearer ${token}`,
+      "Authorization": `Bearer ${token}`,
       'Content-Type': 'application/json',
     };
     try {
@@ -215,6 +204,33 @@ export default function Student() {
       console.log({ error });
     }
   };
+
+  const addingMedium = async (e) => {
+    e.preventDefault()
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    }
+    const d = {
+      BoardId: boardId,
+      MediumName: mediumName
+    }
+    if (boardId === "" || mediumName === "") {
+      setAllField("Please fill all required fields")
+    } else {
+      setAllField("")
+      try {
+        const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}edu/Save-Medium`, d, { headers: h })
+        console.log(data)
+        if (data.result === "Success") {
+          setOpenModal(false)
+          handleBoards(boardId)
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    }
+  }
 
   return (
     <Page title="User">
@@ -249,32 +265,41 @@ export default function Student() {
           />
 
           <div>
-            <Dialog fullWidth open={openModal} onClose={() => setOpenModal(false)}>
-              <DialogTitle>Board</DialogTitle>
-              <DialogContent>
-                <Box sx={{ margin: '12px' }}>
-                  <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">Board</InputLabel>
-                    <Select labelId="demo-simple-select-label" id="demo-simple-select" label="State">
-                      {allBoards.map((board, index) => {
-                        return (
-                          <MenuItem key={index} value={board.id}>
-                            {board.boardName}
-                          </MenuItem>
-                        );
-                      })}
-                    </Select>
-                  </FormControl>
-                </Box>
+            <Dialog fullWidth open={openModal}>
+              <form onSubmit={addingMedium}>
+                <DialogTitle>Medium</DialogTitle>
+                <DialogContent>
+                  <Box sx={{ margin: '12px' }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="demo-simple-select-label">Board</InputLabel>
+                      <Select labelId="demo-simple-select-label" id="demo-simple-select" label="State"
+                        onChange={(e) => setBoardId(e.target.value)}
+                      >
+                        {allBoards.map((board, index) => {
+                          return (
+                            <MenuItem key={index} value={board.id}>
+                              {board.boardName}
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
 
-                <Box sx={{ margin: '12px' }}>
-                  <TextField fullWidth id="outlined-basic" label="Medium" variant="outlined" />
-                </Box>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={() => setOpenModal(false)}>Cancel</Button>
-                <Button onClick={() => setOpenModal(false)}>Add</Button>
-              </DialogActions>
+                  <Box sx={{ margin: '12px' }}>
+                    <TextField fullWidth id="outlined-basic" label="Medium" variant="outlined"
+                      onChange={(e) => setMediumName(e.target.value)}
+                    />
+                  </Box>
+                  {allField.length > 0 && <Typography sx={{ color: 'red' }} variant="p" gutterBottom>
+                    {allField}
+                  </Typography>}
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setOpenModal(false)}>Cancel</Button>
+                  <Button type='submit'>Add</Button>
+                </DialogActions>
+              </form>
             </Dialog>
           </div>
 

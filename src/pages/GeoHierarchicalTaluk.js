@@ -299,7 +299,7 @@ export default function Student() {
             <Dialog fullWidth open={openModal}>
               <form onSubmit={addingTaluk}>
                 <DialogContent>
-                  <DialogTitle>District</DialogTitle>
+                  <DialogTitle>Taluk</DialogTitle>
                   <Box sx={{ margin: '12px' }}>
                     <FormControl fullWidth>
                       <InputLabel id="demo-simple-select-label">State</InputLabel>

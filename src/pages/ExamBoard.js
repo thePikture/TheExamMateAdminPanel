@@ -1,6 +1,6 @@
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 // material
 import {
@@ -29,6 +29,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import axios from 'axios';
 // components
 import Page from '../components/Page';
 import Label from '../components/Label';
@@ -94,6 +95,8 @@ export default function Student() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [openModal, setOpenModal] = useState(false);
+  const [token, setToken] = useState('');
+  const [allStates, setAllStates] = useState([]);
 
   const state = true;
   const district = false;
@@ -101,7 +104,7 @@ export default function Student() {
   const school = false;
   const board = false;
   const grade = false;
-  const search = true;
+  const search = false;
   const add = true;
 
   function createData(id, state, board) {
@@ -124,6 +127,14 @@ export default function Student() {
     createData('1', 'Nigeria', 'NG'),
     createData('1', 'Brazil', 'BR'),
   ];
+
+  useEffect(() => {
+    const tok = sessionStorage.getItem('token');
+    if (tok !== null || tok !== undefined) {
+      setToken(tok);
+      getAllState(tok);
+    }
+  }, []);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -178,6 +189,20 @@ export default function Student() {
 
   const isUserNotFound = filteredUsers.length === 0;
 
+  const getAllState = async (token) => {
+    const h = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_DOMAIN_NAME}Geo/get-State-all`, { headers: h });
+      console.log(data);
+      setAllStates(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <Page title="User">
       <Container>
@@ -205,6 +230,7 @@ export default function Student() {
             add={add}
             openModal={openModal}
             handleModal={handleModal}
+            allStates={allStates}
           />
 
           <div>

@@ -70,6 +70,8 @@ export default function UserListToolbar({
   handleSearch,
   allDistricts,
   handleSearchTaluk,
+  allBoards,
+  handleBoards,
 }) {
   return (
     <RootStyle
@@ -104,24 +106,26 @@ export default function UserListToolbar({
           {numSelected} selected
         </Typography>
       ) : (
-        <Box sx={{ minWidth: 170, margin: '7px' }}>
+        <>
           {state && (
-            <FormControl fullWidth>
-              <InputLabel id="category">State</InputLabel>
-              <Select
-                labelId="category"
-                id="demo-simple-select"
-                label="State"
-                onChange={(e) => handleSearch(e.target.value)}
-              >
-                {allStates.map((item) => {
-                  console.log(item);
-                  return <MenuItem value={item.id}>{item.stateName}</MenuItem>;
-                })}
-              </Select>
-            </FormControl>
+            <Box sx={{ minWidth: 170, margin: '7px' }}>
+              <FormControl fullWidth>
+                <InputLabel id="category">State</InputLabel>
+                <Select
+                  labelId="category"
+                  id="demo-simple-select"
+                  label="State"
+                  onChange={(e) => handleSearch(e.target.value)}
+                >
+                  {allStates.map((item) => {
+                    console.log(item);
+                    return <MenuItem value={item.id}>{item.stateName}</MenuItem>;
+                  })}
+                </Select>
+              </FormControl>
+            </Box>
           )}
-        </Box>
+        </>
       )}
 
       {numSelected > 0 ? (
@@ -206,11 +210,20 @@ export default function UserListToolbar({
             <Box sx={{ minWidth: 170, margin: '7px' }}>
               <FormControl fullWidth>
                 <InputLabel id="category">Board</InputLabel>
-                <Select labelId="category" id="demo-simple-select" label="Board">
-                  <MenuItem value={'1'}>1</MenuItem>
-                  <MenuItem value={'1'}>2</MenuItem>
-                  <MenuItem value={'1'}>3</MenuItem>
-                  <MenuItem value={'1'}>4</MenuItem>
+                <Select
+                  labelId="category"
+                  id="demo-simple-select"
+                  label="Board"
+                  onChange={(e) => handleBoards(e.target.value)}
+                >
+                  {allBoards.map((board, index) => {
+                    console.log({ board });
+                    return (
+                      <MenuItem key={index} value={board.id}>
+                        {board.boardName}
+                      </MenuItem>
+                    );
+                  })}
                 </Select>
               </FormControl>
             </Box>

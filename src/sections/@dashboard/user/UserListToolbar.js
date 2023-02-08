@@ -62,6 +62,7 @@ export default function UserListToolbar({
   grade,
   search,
   medium,
+  subjectGroup,
   add,
   openModal,
   handleModal,
@@ -77,6 +78,8 @@ export default function UserListToolbar({
   handleGetGrade,
   allGrades,
   handleGetSubjectGroup,
+  allSubjectGroups,
+  handleGetSubjects,
 }) {
   return (
     <RootStyle
@@ -289,6 +292,39 @@ export default function UserListToolbar({
                     return (
                       <MenuItem key={index} value={grade.id}>
                         {grade.grade}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Box>
+          )}
+        </>
+      )}
+
+      {numSelected > 0 ? (
+        <Typography component="div" variant="subtitle1">
+          {numSelected} selected
+        </Typography>
+      ) : (
+        <>
+          {subjectGroup && (
+            <Box sx={{ minWidth: 170, margin: '7px' }}>
+              <FormControl fullWidth>
+                <InputLabel id="category">Subject Group</InputLabel>
+                <Select
+                  labelId="category"
+                  id="demo-simple-select"
+                  label="Grade"
+                  onChange={(e) => {
+                    handleGetSubjects(e.target.value);
+                  }}
+                >
+                  {allSubjectGroups.map((subjectGroup, index) => {
+                    console.log({ grade });
+                    return (
+                      <MenuItem key={index} value={subjectGroup.id}>
+                        {subjectGroup.subjectGroup}
                       </MenuItem>
                     );
                   })}

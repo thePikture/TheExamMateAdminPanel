@@ -79,7 +79,7 @@ function applySortFilter(array, comparator, query) {
     return a[1] - b[1];
   });
   if (query) {
-    return filter(array, (_user) => _user.districtName.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+    return filter(array, (_user) => _user.talukName.toLowerCase().indexOf(query.toLowerCase()) !== -1);
   }
   return stabilizedThis.map((el) => el[0]);
 }
@@ -100,13 +100,13 @@ export default function Student() {
   const [openModal, setOpenModal] = useState(false);
   const [token, setToken] = useState('');
   const [allStates, setAllStates] = useState([]);
-
   const [allDistricts, setAllDistricts] = useState([]);
+  const [allTaluk, setAllTaluk] = useState([])
   const [allField, setAllField] = useState('');
   const [stateId, setStateId] = useState('');
-  const [districtCode, setDistrictsCode] = useState('');
-  const [districtName, setDistrictName] = useState('');
-  const [selectedStateId, setSelectedStateId] = useState('');
+  const [districtId, setDistrictId] = useState('');
+  const [talukCode, setTalukCode] = useState('');
+  const [talukName, setTalukName] = useState('');
 
   const state = true;
   const district = true;
@@ -125,7 +125,7 @@ export default function Student() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = allDistricts.map((n) => n.name);
+      const newSelecteds = allTaluk.map((n) => n.name);
       setSelected(newSelecteds);
       return;
     }
@@ -164,9 +164,9 @@ export default function Student() {
     setFilterName(event.target.value);
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - allDistricts.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - allTaluk.length) : 0;
 
-  const filteredUsers = applySortFilter(allDistricts, getComparator(order, orderBy), filterName);
+  const filteredUsers = applySortFilter(allTaluk, getComparator(order, orderBy), filterName);
 
   const isUserNotFound = filteredUsers.length === 0;
 
@@ -180,7 +180,7 @@ export default function Student() {
 
   const getAllState = async (token) => {
     const h = {
-      Authorization: `Bearer ${token}`,
+      "Authorization": `Bearer ${token}`,
       'Content-Type': 'application/json',
     };
     try {
@@ -194,7 +194,7 @@ export default function Student() {
 
   const handleSearch = async (stateId) => {
     const h = {
-      Authorization: `Bearer ${token}`,
+      "Authorization": `Bearer ${token}`,
       'Content-Type': 'application/json',
     };
     try {
@@ -202,43 +202,65 @@ export default function Student() {
         headers: h,
       });
       console.log(data);
-      // setAllStates(data)
       setAllDistricts(data);
     } catch (error) {
       console.log(error);
     }
   };
-  const handleSearchTaluk = async (districtId) => {
-    console.log(districtId);
-  };
 
-  const addingDistrict = async (e) => {
-    e.preventDefault();
+  const handleSearchTaluk = async (districtId) => {
     const h = {
-      Authorization: `Bearer ${token}`,
+      "Authorization": `Bearer ${token}`,
       'Content-Type': 'application/json',
-    };
-    const d = {
-      StateId: stateId,
-      DistrictCode: districtCode,
-      DistrictName: districtName,
-    };
-    if (stateId === '' || districtCode === '' || districtName === '') {
-      setAllField('Please fill all required fields');
-    } else {
-      setAllField('');
-      try {
-        const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}Geo/save-District`, d, { headers: h });
-        console.log(data);
-        if (data.result === 'Success') {
-          setOpenModal(false);
-          handleSearch(stateId);
-        }
-      } catch (error) {
-        console.log(error);
-      }
+    }
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_DOMAIN_NAME}Geo/get-taluk-bydistrictId/${districtId}`, { headers: h })
+      console.log(data)
+      setAllTaluk(data)
+    } catch (error) {
+      console.log(error)
     }
   };
+
+  const addingTaluk = async (e) => {
+    e.preventDefault()
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": 'application/json',
+    }
+    const d = {
+      StateId: stateId,
+      DistrictId: districtId,
+      BlockCode: talukCode,
+      BlockName: talukName
+    }
+    if (stateId === "" || districtId === "" || talukCode === "" || talukName === " ") {
+      setAllField("Please fill all required fields")
+    } else {
+      setAllField("")
+      try {
+        const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}Geo/save-Block`, d, { headers: h })
+        console.log(data)
+        if (data.result === "Success") {
+          setOpenModal(false)
+          handleSearchTaluk(districtId)
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    }
+
+  }
+
+  const handleState = (e) => {
+    setStateId(e.target.value)
+    handleSearch(e.target.value)
+  }
+
+  const handleDistrict = (e) => {
+    setDistrictId(e.target.value)
+  }
+
 
   return (
     <Page title="User">
@@ -274,8 +296,8 @@ export default function Student() {
           />
 
           <div>
-            <Dialog fullWidth open={openModal} onClose={() => setOpenModal(false)}>
-              <form onSubmit={addingDistrict}>
+            <Dialog fullWidth open={openModal}>
+              <form onSubmit={addingTaluk}>
                 <DialogContent>
                   <DialogTitle>District</DialogTitle>
                   <Box sx={{ margin: '12px' }}>
@@ -285,7 +307,8 @@ export default function Student() {
                         labelId="demo-simple-select-label"
                         id="demo-simple-select"
                         label="State"
-                        onChange={(e) => setStateId(e.target.value)}
+                        onChange={(e) => handleState(e)}
+
                       >
                         {allStates.map((item) => {
                           return <MenuItem value={item.stateId}>{item.stateName}</MenuItem>;
@@ -294,21 +317,39 @@ export default function Student() {
                     </FormControl>
                   </Box>
                   <Box sx={{ margin: '12px' }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="demo-simple-select-label1">District</InputLabel>
+                      <Select
+                        labelId="demo-simple-select-label1"
+                        id="demo-simple-select1"
+                        label="District"
+                        onChange={(e) =>
+                          handleDistrict(e)
+                        }
+                      >
+                        {allDistricts.map((item) => {
+                          console.log({ item })
+                          return <MenuItem key={item.id} value={item.id}>{item.districtName}</MenuItem>;
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  <Box sx={{ margin: '12px' }}>
                     <TextField
                       fullWidth
                       id="outlined-basic"
-                      label="District Code"
+                      label="Taluk Code"
                       variant="outlined"
-                      onChange={(e) => setDistrictsCode(e.target.value)}
+                      onChange={(e) => setTalukCode(e.target.value)}
                     />
                   </Box>
                   <Box sx={{ margin: '12px' }}>
                     <TextField
                       fullWidth
                       id="outlined-basic"
-                      label="District Name"
+                      label="Taluk Name"
                       variant="outlined"
-                      onChange={(e) => setDistrictName(e.target.value)}
+                      onChange={(e) => setTalukName(e.target.value)}
                     />
                   </Box>
                   {allField.length > 0 && (
@@ -332,14 +373,14 @@ export default function Student() {
                   order={order}
                   orderBy={orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={allDistricts.length}
+                  rowCount={allTaluk.length}
                   numSelected={selected.length}
                   onRequestSort={handleRequestSort}
                   onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { stateId, stateCode, stateName, districtCode, districtName } = row;
+                    const { stateId, stateCode, stateName, districtCode, districtName, blockCode, blockName } = row;
                     const isItemSelected = selected.indexOf(state) !== -1;
                     return (
                       <TableRow
@@ -365,6 +406,8 @@ export default function Student() {
                         <TableCell align="left">{stateName}</TableCell>
                         <TableCell align="left">{districtCode}</TableCell>
                         <TableCell align="left">{districtName}</TableCell>
+                        <TableCell align="left">{blockCode}</TableCell>
+                        <TableCell align="left">{blockName}</TableCell>
                         {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
                         <TableCell align="left">
                           <Label variant="ghost" color={(status === 'banned' && 'error') || 'success'}>
@@ -397,7 +440,7 @@ export default function Student() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={allDistricts.length}
+            count={allTaluk.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

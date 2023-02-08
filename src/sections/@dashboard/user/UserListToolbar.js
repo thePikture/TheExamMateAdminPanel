@@ -75,6 +75,8 @@ export default function UserListToolbar({
   handleBoards,
   allMediums,
   handleGetGrade,
+  allGrades,
+  handleGetSubjectGroup,
 }) {
   return (
     <RootStyle
@@ -274,11 +276,22 @@ export default function UserListToolbar({
             <Box sx={{ minWidth: 170, margin: '7px' }}>
               <FormControl fullWidth>
                 <InputLabel id="category">Grade</InputLabel>
-                <Select labelId="category" id="demo-simple-select" label="Grade">
-                  <MenuItem value={'1'}>1</MenuItem>
-                  <MenuItem value={'1'}>2</MenuItem>
-                  <MenuItem value={'1'}>3</MenuItem>
-                  <MenuItem value={'1'}>4</MenuItem>
+                <Select
+                  labelId="category"
+                  id="demo-simple-select"
+                  label="Grade"
+                  onChange={(e) => {
+                    handleGetSubjectGroup(e.target.value);
+                  }}
+                >
+                  {allGrades.map((grade, index) => {
+                    console.log({ grade });
+                    return (
+                      <MenuItem key={index} value={grade.id}>
+                        {grade.grade}
+                      </MenuItem>
+                    );
+                  })}
                 </Select>
               </FormControl>
             </Box>

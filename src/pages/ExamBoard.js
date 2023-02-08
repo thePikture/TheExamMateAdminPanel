@@ -76,7 +76,7 @@ function applySortFilter(array, comparator, query) {
     return a[1] - b[1];
   });
   if (query) {
-    return filter(array, (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+    return filter(array, (_user) => _user.boardName.toLowerCase().indexOf(query.toLowerCase()) !== -1);
   }
   return stabilizedThis.map((el) => el[0]);
 }
@@ -95,10 +95,14 @@ export default function Student() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [openModal, setOpenModal] = useState(false);
+  const [allField, setAllField] = useState('');
   const [token, setToken] = useState('');
   const [allStates, setAllStates] = useState([]);
+  const [stateId, setStateId] = useState("")
+  const [boardName, setBoardName] = useState("")
+  const [allBoard, setAllBoard] = useState([])
 
-  const state = true;
+  const state = false;
   const district = false;
   const taluk = false;
   const school = false;
@@ -107,32 +111,12 @@ export default function Student() {
   const search = false;
   const add = true;
 
-  function createData(id, state, board) {
-    return { id, state, board };
-  }
-  const rows = [
-    createData('1', 'India', 'IN'),
-    createData('1', 'China', 'CN'),
-    createData('1', 'Italy', 'IT'),
-    createData('1', 'United States', 'US'),
-    createData('1', 'Canada', 'CA'),
-    createData('1', 'Australia', 'AU'),
-    createData('1', 'Germany', 'DE'),
-    createData('1', 'Ireland', 'IE'),
-    createData('1', 'Mexico', 'MX'),
-    createData('1', 'Japan', 'JP'),
-    createData('1', 'France', 'FR'),
-    createData('1', 'United Kingdom', 'GB'),
-    createData('1', 'Russia', 'RU'),
-    createData('1', 'Nigeria', 'NG'),
-    createData('1', 'Brazil', 'BR'),
-  ];
-
   useEffect(() => {
     const tok = sessionStorage.getItem('token');
     if (tok !== null || tok !== undefined) {
       setToken(tok);
       getAllState(tok);
+      getAllBoards(tok)
     }
   }, []);
 
@@ -144,7 +128,7 @@ export default function Student() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = rows.map((n) => n.name);
+      const newSelecteds = allBoard.map((n) => n.name);
       setSelected(newSelecteds);
       return;
     }
@@ -183,15 +167,15 @@ export default function Student() {
     setFilterName(event.target.value);
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - allBoard.length) : 0;
 
-  const filteredUsers = applySortFilter(rows, getComparator(order, orderBy), filterName);
+  const filteredUsers = applySortFilter(allBoard, getComparator(order, orderBy), filterName);
 
   const isUserNotFound = filteredUsers.length === 0;
 
   const getAllState = async (token) => {
     const h = {
-      Authorization: `Bearer ${token}`,
+      "Authorization": `Bearer ${token}`,
       'Content-Type': 'application/json',
     };
     try {
@@ -202,6 +186,48 @@ export default function Student() {
       console.log(error);
     }
   };
+
+
+
+  const addingBoard = async (e) => {
+    e.preventDefault();
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+    const d = {
+      StateId: stateId,
+      BoardName: boardName
+    }
+    if (stateId === "" || boardName === " ") {
+      setAllField("Please fill all required fields")
+    } else {
+      setAllField("")
+      try {
+        const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}edu/Save-Board`, d, { headers: h });
+        console.log(data)
+        if (data.result === "Success") {
+          setOpenModal(false)
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    }
+  }
+
+  const getAllBoards = async (token) => {
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_DOMAIN_NAME}edu/get-Board-all`, { headers: h });
+      console.log(data);
+      setAllBoard(data)
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   return (
     <Page title="User">
@@ -235,27 +261,41 @@ export default function Student() {
 
           <div>
             <Dialog fullWidth open={openModal} onClose={() => setOpenModal(false)}>
-              <DialogTitle>Board</DialogTitle>
-              <DialogContent>
-                <Box sx={{ margin: '12px' }}>
-                  <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">State</InputLabel>
-                    <Select labelId="demo-simple-select-label" id="demo-simple-select" label="State">
-                      <MenuItem value={10}>Ten</MenuItem>
-                      <MenuItem value={20}>Twenty</MenuItem>
-                      <MenuItem value={30}>Thirty</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Box>
+              <form onSubmit={addingBoard}>
+                <DialogTitle>Board</DialogTitle>
+                <DialogContent>
+                  <Box sx={{ margin: '12px' }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="demo-simple-select-label">State</InputLabel>
+                      <Select labelId="demo-simple-select-label" id="demo-simple-select" label="State"
+                        onChange={(e) => setStateId(e.target.value)}
+                      >
+                        {allStates.map((state, index) => {
+                          console.log({ state })
+                          return (
+                            <MenuItem key={index} value={state.stateId}> {state.stateName}</MenuItem>
+                          )
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
 
-                <Box sx={{ margin: '12px' }}>
-                  <TextField fullWidth id="outlined-basic" label="Board" variant="outlined" />
-                </Box>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={() => setOpenModal(false)}>Cancel</Button>
-                <Button onClick={() => setOpenModal(false)}>Add</Button>
-              </DialogActions>
+                  <Box sx={{ margin: '12px' }}>
+                    <TextField fullWidth id="outlined-basic" label="Board" variant="outlined"
+                      onChange={(e) => setBoardName(e.target.value)}
+                    />
+                  </Box>
+                  {allField.length > 0 && (
+                    <Typography sx={{ color: 'red' }} variant="p" gutterBottom>
+                      {allField}
+                    </Typography>
+                  )}
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setOpenModal(false)}>Cancel</Button>
+                  <Button type='submit'>Add</Button>
+                </DialogActions>
+              </form>
             </Dialog>
           </div>
 
@@ -266,19 +306,19 @@ export default function Student() {
                   order={order}
                   orderBy={orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={USERLIST.length}
+                  rowCount={allBoard.length}
                   numSelected={selected.length}
                   onRequestSort={handleRequestSort}
                   onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
-                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, state, board } = row;
+                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
+                    const { stateId, stateName, boardName } = row;
                     const isItemSelected = selected.indexOf(state) !== -1;
                     return (
                       <TableRow
                         hover
-                        key={id}
+                        key={index}
                         tabIndex={-1}
                         role="checkbox"
                         selected={isItemSelected}
@@ -294,9 +334,9 @@ export default function Student() {
                             </Typography>
                           </Stack>
                         </TableCell> */}
-                        <TableCell align="left">{id}</TableCell>
-                        <TableCell align="left">{state}</TableCell>
-                        <TableCell align="left">{board}</TableCell>
+                        <TableCell align="left">{stateId}</TableCell>
+                        <TableCell align="left">{stateName}</TableCell>
+                        <TableCell align="left">{boardName}</TableCell>
                         {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
                         <TableCell align="left">
                           <Label variant="ghost" color={(status === 'banned' && 'error') || 'success'}>
@@ -329,7 +369,7 @@ export default function Student() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={USERLIST.length}
+            count={allBoard.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

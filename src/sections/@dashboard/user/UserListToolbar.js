@@ -61,6 +61,7 @@ export default function UserListToolbar({
   board,
   grade,
   search,
+  medium,
   add,
   openModal,
   handleModal,
@@ -72,6 +73,8 @@ export default function UserListToolbar({
   handleSearchTaluk,
   allBoards,
   handleBoards,
+  allMediums,
+  handleGetGrade,
 }) {
   return (
     <RootStyle
@@ -230,6 +233,36 @@ export default function UserListToolbar({
           )}
         </>
       )}
+      {numSelected > 0 ? (
+        <Typography component="div" variant="subtitle1">
+          {numSelected} selected
+        </Typography>
+      ) : (
+        <>
+          {medium && (
+            <Box sx={{ minWidth: 170, margin: '7px' }}>
+              <FormControl fullWidth>
+                <InputLabel id="category">Medium</InputLabel>
+                <Select
+                  labelId="category"
+                  id="demo-simple-select"
+                  label="Board"
+                  onChange={(e) => handleGetGrade(e.target.value)}
+                >
+                  {allMediums.map((medium, index) => {
+                    console.log({ medium });
+                    return (
+                      <MenuItem key={index} value={medium.id}>
+                        {medium.mediumName}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Box>
+          )}
+        </>
+      )}
 
       {numSelected > 0 ? (
         <Typography component="div" variant="subtitle1">
@@ -258,13 +291,15 @@ export default function UserListToolbar({
           {numSelected} selected
         </Typography>
       ) : (
-        <Box sx={{ minWidth: 170, margin: '7px' }}>
+        <>
           {search && (
-            <Button type="submit" variant="contained" size="large" onClick={handleSearch}>
-              Search
-            </Button>
+            <Box sx={{ minWidth: 170, margin: '7px' }}>
+              <Button type="submit" variant="contained" size="large" onClick={handleSearch}>
+                Search
+              </Button>
+            </Box>
           )}
-        </Box>
+        </>
       )}
 
       {numSelected > 0 ? (
@@ -272,7 +307,7 @@ export default function UserListToolbar({
           {numSelected} selected
         </Typography>
       ) : (
-        <Box sx={{ minWidth: 170, margin: '7px', position: 'absolute', right: '0px' }}>
+        <Box sx={{ minWidth: 170, margin: '7px' }}>
           {add && (
             <Button type="submit" variant="contained" size="large" onClick={handleModal}>
               Add

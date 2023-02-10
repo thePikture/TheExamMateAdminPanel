@@ -157,79 +157,136 @@ export default function NavSection({ navConfig, ...other }) {
         ))}
       </List> */}
       <List disablePadding sx={{ p: 1 }}>
-        <NavItem item={{
-          title: 'Dashboard',
-          path: '/dashboard/app',
-          icon: getIcon('eva:pie-chart-2-fill'),
-        }} active={match} />
+        <NavItem
+          item={{
+            title: 'Dashboard',
+            path: '/dashboard/app',
+            icon: getIcon('eva:pie-chart-2-fill'),
+          }}
+          active={match}
+        />
 
-        <NavItem item={{
-          title: 'Student',
-          path: '/dashboard/student',
-          icon: getIcon('eva:people-fill'),
-        }} active={match} />
+        <NavItem
+          item={{
+            title: 'Student',
+            path: '/dashboard/student',
+            icon: getIcon('eva:people-fill'),
+          }}
+          active={match}
+        />
 
-        <Box onClick={() => setGeoShow(!geoShow)} sx={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
-          <NavItem item={{
-            title: 'Geo Hierarchical',
-            path: '/dashboard/geo-hierarchical-state',
-            icon: getIcon('eva:shopping-bag-fill'),
-          }} active={match} /> <ArrowDropDownIcon />
+        <Box onClick={() => setGeoShow(!geoShow)} sx={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+          <NavItem
+            item={{
+              title: 'Geo Hierarchical',
+              path: '/dashboard/geo-hierarchical-state',
+              icon: getIcon('eva:shopping-bag-fill'),
+            }}
+            active={match}
+          />{' '}
+          <ArrowDropDownIcon />
         </Box>
 
-        {geoShow && (<><NavItem item={{
-          title: 'State',
-          path: '/dashboard/geo-hierarchical-state',
-          icon: getIcon('mdi:map-marker'),
-        }} active={match} />
+        {geoShow && (
+          <>
+            <NavItem
+              item={{
+                title: 'State',
+                path: '/dashboard/geo-hierarchical-state',
+                icon: getIcon('mdi:map-marker'),
+              }}
+              active={match}
+            />
 
-          <NavItem item={{
-            title: 'District',
-            path: '/dashboard/geo-hierarchical-district',
-            icon: getIcon('ic:round-zoom-in-map'),
-          }} active={match} />
+            <NavItem
+              item={{
+                title: 'District',
+                path: '/dashboard/geo-hierarchical-district',
+                icon: getIcon('ic:round-zoom-in-map'),
+              }}
+              active={match}
+            />
 
-          <NavItem item={{
-            title: 'Taluk',
-            path: '/dashboard/geo-hierarchical-taluk',
-            icon: getIcon('mdi:map-marker-distance'),
-          }} active={match} /></>)}
+            <NavItem
+              item={{
+                title: 'Taluk',
+                path: '/dashboard/geo-hierarchical-taluk',
+                icon: getIcon('mdi:map-marker-distance'),
+              }}
+              active={match}
+            />
+          </>
+        )}
 
-        <Box onClick={() => setExamShow(!examShow)} sx={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
-          <NavItem item={{
-            title: 'Exam Hierarchical',
-            path: '/dashboard/exam-board',
-            icon: getIcon('healthicons:i-exam-multiple-choice'),
-          }} active={match} /> <ArrowDropDownIcon />
+        <Box
+          onClick={() => setExamShow(!examShow)}
+          sx={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}
+        >
+          <NavItem
+            item={{
+              title: 'Exam Hierarchical',
+              path: '/dashboard/exam-board',
+              icon: getIcon('healthicons:i-exam-multiple-choice'),
+            }}
+            active={match}
+          />{' '}
+          <ArrowDropDownIcon />
         </Box>
-        {examShow && (<><NavItem item={{
-          title: 'Board',
-          path: '/dashboard/exam-board',
-          icon: getIcon('iconoir:kanban-board'),
-        }} active={match} />
+        {examShow && (
+          <>
+            <NavItem
+              item={{
+                title: 'Board',
+                path: '/dashboard/exam-board',
+                icon: getIcon('iconoir:kanban-board'),
+              }}
+              active={match}
+            />
 
-          <NavItem item={{
-            title: 'Medium',
-            path: '/dashboard/exam-medium',
-            icon: getIcon('teenyicons:medium-outline'),
-          }} active={match} />
+            <NavItem
+              item={{
+                title: 'Medium',
+                path: '/dashboard/exam-medium',
+                icon: getIcon('teenyicons:medium-outline'),
+              }}
+              active={match}
+            />
 
-          <NavItem item={{
-            title: 'Grade',
-            path: '/dashboard/exam-grade',
-            icon: getIcon('carbon:intent-request-upgrade'),
-          }} active={match} />
+            <NavItem
+              item={{
+                title: 'Grade',
+                path: '/dashboard/exam-grade',
+                icon: getIcon('carbon:intent-request-upgrade'),
+              }}
+              active={match}
+            />
 
-          <NavItem item={{
-            title: 'SubjectGroup',
-            path: '/dashboard/exam-subject-group',
-            icon: getIcon('emojione-monotone:books'),
-          }} active={match} />
-          <NavItem item={{
-            title: 'Subject',
-            path: '/dashboard/exam-subject',
-            icon: getIcon('material-symbols:menu-book'),
-          }} active={match} /></>)}
+            <NavItem
+              item={{
+                title: 'SubjectGroup',
+                path: '/dashboard/exam-subject-group',
+                icon: getIcon('emojione-monotone:books'),
+              }}
+              active={match}
+            />
+            <NavItem
+              item={{
+                title: 'Subject',
+                path: '/dashboard/exam-subject',
+                icon: getIcon('material-symbols:menu-book'),
+              }}
+              active={match}
+            />
+          </>
+        )}
+        <NavItem
+          item={{
+            title: 'School',
+            path: '/dashboard/school',
+            icon: getIcon('teenyicons:school-outline'),
+          }}
+          active={match}
+        />
       </List>
     </Box>
   );

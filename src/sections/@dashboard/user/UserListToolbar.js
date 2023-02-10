@@ -126,7 +126,6 @@ export default function UserListToolbar({
                   onChange={(e) => handleSearch(e.target.value)}
                 >
                   {allStates.map((item) => {
-                    console.log(item);
                     return <MenuItem value={item.id}>{item.stateName}</MenuItem>;
                   })}
                 </Select>

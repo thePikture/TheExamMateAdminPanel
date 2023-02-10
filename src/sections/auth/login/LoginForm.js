@@ -45,7 +45,6 @@ export default function LoginForm() {
       } catch (error) {
         console.log(error)
       }
-      // navigate('/dashboard', { replace: true });
     },
   });
 

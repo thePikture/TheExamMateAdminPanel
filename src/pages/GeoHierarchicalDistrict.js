@@ -45,7 +45,6 @@ import USERLIST from '../_mock/user';
 
 const TABLE_HEAD = [
   { id: 'stateId', label: 'State Id', alignRight: false },
-  { id: 'stateCode', label: 'State Code', alignRight: false },
   { id: 'stateName', label: 'State Name', alignRight: false },
   { id: 'districtCode', label: 'District Code', alignRight: false },
   { id: 'districtName', label: 'District Name', alignRight: false },
@@ -169,7 +168,7 @@ export default function Student() {
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - allDistricts.length) : 0;
 
-  const filteredUsers = applySortFilter(allDistricts, getComparator(order, orderBy), filterName);
+  let filteredUsers = applySortFilter(allDistricts, getComparator(order, orderBy), filterName);
 
   const isUserNotFound = filteredUsers.length === 0;
 
@@ -178,8 +177,10 @@ export default function Student() {
     if (tok !== null || tok !== undefined) {
       setToken(tok)
       getAllState(tok)
+      // const filteredUsers = applySortFilter(allDistricts, getComparator(order, orderBy), filterName);
+
     }
-  }, [])
+  }, [allDistricts])
 
   const getAllState = async (token) => {
     const h = {
@@ -196,6 +197,7 @@ export default function Student() {
   }
 
   const handleSearch = async (stateId) => {
+    setAllDistricts([])
     const h = {
       "Authorization": `Bearer ${token}`,
       "Content-Type": 'application/json',
@@ -203,6 +205,7 @@ export default function Student() {
     try {
       const { data } = await axios.get(`${process.env.REACT_APP_DOMAIN_NAME}Geo/get-District-bystateId/${stateId}`, { headers: h })
       console.log(data)
+      filteredUsers = applySortFilter(data, getComparator(order, orderBy), filterName);
       // setAllStates(data)
       setAllDistricts(data)
     } catch (error) {
@@ -323,6 +326,7 @@ export default function Student() {
                   onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
+                  {console.log({ filteredUsers })}
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
                     const { stateId, stateCode, stateName, districtCode, districtName } = row;
                     const isItemSelected = selected.indexOf(state) !== -1;
@@ -346,7 +350,6 @@ export default function Student() {
                           </Stack>
                         </TableCell> */}
                         <TableCell align="left">{stateId}</TableCell>
-                        <TableCell align="left">{stateCode}</TableCell>
                         <TableCell align="left">{stateName}</TableCell>
                         <TableCell align="left">{districtCode}</TableCell>
                         <TableCell align="left">{districtName}</TableCell>

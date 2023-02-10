@@ -44,10 +44,7 @@ import USERLIST from '../_mock/user';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'stateId', label: 'State Id', alignRight: false },
-  { id: 'stateCode', label: 'State Code', alignRight: false },
   { id: 'stateName', label: 'State Name', alignRight: false },
-  { id: 'districtCode', label: 'District Code', alignRight: false },
   { id: 'districtName', label: 'District Name', alignRight: false },
   { id: 'talukCode', label: 'Taluk Code', alignRight: false },
   { id: 'talukName', label: 'Taluk Name', alignRight: false },
@@ -380,7 +377,7 @@ export default function Student() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { stateId, stateCode, stateName, districtCode, districtName, blockCode, blockName } = row;
+                    const { stateId, stateName, districtName, blockCode, blockName } = row;
                     const isItemSelected = selected.indexOf(state) !== -1;
                     return (
                       <TableRow
@@ -401,10 +398,7 @@ export default function Student() {
                             </Typography>
                           </Stack>
                         </TableCell> */}
-                        <TableCell align="left">{stateId}</TableCell>
-                        <TableCell align="left">{stateCode}</TableCell>
                         <TableCell align="left">{stateName}</TableCell>
-                        <TableCell align="left">{districtCode}</TableCell>
                         <TableCell align="left">{districtName}</TableCell>
                         <TableCell align="left">{blockCode}</TableCell>
                         <TableCell align="left">{blockName}</TableCell>

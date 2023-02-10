@@ -67,9 +67,9 @@ export default function Register() {
         <HeaderStyle>
           <img src={logo} alt="logo" width={150} />
           {smUp && (
-            <Typography variant="h5" sx={{ mt: { md: -2 } }}>
+            <Typography variant="h6" sx={{ mt: { md: -2 } }}>
               Already have an account? {''}
-              <Link variant="h5" component={RouterLink} to="/login">
+              <Link variant="h6" component={RouterLink} to="/login">
                 Login
               </Link>
             </Typography>

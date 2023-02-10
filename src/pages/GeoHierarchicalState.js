@@ -3,6 +3,7 @@ import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import EditIcon from '@mui/icons-material/Edit';
 // material
 import {
   Card,
@@ -47,6 +48,7 @@ const TABLE_HEAD = [
   { id: 'stateId', label: 'State Id', alignRight: false },
   { id: 'stateCode', label: 'State Code', alignRight: false },
   { id: 'stateName', label: 'State Name', alignRight: false },
+  { id: 'action', label: 'Action', alignRight: false },
   { id: '' },
 ];
 
@@ -95,6 +97,7 @@ export default function Student() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [openModal, setOpenModal] = useState(false);
+  const [openModalUpdate, setOpenModalUpdate] = useState(false);
   const [stateId, setStateId] = useState("")
   const [stateCode, setStateCode] = useState("")
   const [stateName, setStateName] = useState("")
@@ -216,6 +219,12 @@ export default function Student() {
     }
   }
 
+  const handleEditModal = async (id) => {
+    setOpenModalUpdate(true)
+
+
+  }
+
   return (
     <Page title="User">
       <Container>
@@ -291,7 +300,7 @@ export default function Student() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { stateId, stateCode, stateName } = row;
+                    const { id, stateId, stateCode, stateName } = row;
                     const isItemSelected = selected.indexOf(state) !== -1;
                     return (
                       <TableRow
@@ -315,15 +324,45 @@ export default function Student() {
                         <TableCell align="left">{stateId}</TableCell>
                         <TableCell align="left">{stateCode}</TableCell>
                         <TableCell align="left">{stateName}</TableCell>
-                        {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
-                        <TableCell align="left">
-                          <Label variant="ghost" color={(status === 'banned' && 'error') || 'success'}>
-                            {sentenceCase(status)}
-                          </Label>
-                        </TableCell> */}
+                        <TableCell>
+                          <Button onClick={() => handleEditModal(id)} size='small' sx={{ background: "#6c757d", marginRight: "4px" }} variant="contained"><EditIcon /> </Button>
+                        </TableCell>
                       </TableRow>
                     );
                   })}
+
+                  <div>
+                    <Dialog fullWidth open={openModalUpdate}>
+                      <form onSubmit={addingState}>
+                        <DialogTitle>State</DialogTitle>
+                        <DialogContent>
+                          <Box sx={{ margin: '12px' }}>
+                            <TextField fullWidth id="outlined-basic" label="State Id" variant="outlined"
+                              onChange={(e) => setStateId(e.target.value)}
+                            />
+                          </Box>
+                          <Box sx={{ margin: '12px' }}>
+                            <TextField fullWidth id="outlined-basic" label="State Code" variant="outlined"
+                              onChange={(e) => setStateCode(e.target.value)}
+                            />
+                          </Box>
+                          <Box sx={{ margin: '12px' }}>
+                            <TextField fullWidth id="outlined-basic" label="State Name" variant="outlined"
+                              onChange={(e) => setStateName(e.target.value)}
+                            />
+                          </Box>
+                          {allField.length > 0 && <Typography sx={{ color: 'red' }} variant="p" gutterBottom>
+                            {allField}
+                          </Typography>}
+                        </DialogContent>
+                        <DialogActions>
+                          <Button onClick={() => setOpenModalUpdate(false)}>Cancel</Button>
+                          <Button type='submit'>Add</Button>
+                        </DialogActions>
+                      </form>
+                    </Dialog>
+                  </div>
+
                   {emptyRows > 0 && (
                     <TableRow style={{ height: 53 * emptyRows }}>
                       <TableCell colSpan={6} />

@@ -3,6 +3,8 @@ import { sentenceCase } from 'change-case';
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 // material
+import EditIcon from '@mui/icons-material/Edit';
+
 import {
   Card,
   Table,
@@ -48,6 +50,7 @@ const TABLE_HEAD = [
   { id: 'mediumName', label: 'Medium Name', alignRight: false },
   { id: 'grade', label: 'Grade', alignRight: false },
   { id: 'subjectGroup', label: 'Subject Group', alignRight: false },
+  { id: 'action', label: 'Action', alignRight: false },
   { id: '' },
 ];
 
@@ -102,11 +105,21 @@ export default function ExamSubjectGroup() {
   const [allMediums, setAllMediums] = useState([]);
   const [allGrades, setAllGrades] = useState([]);
   const [allSubjectGroups, setAllSubjectGroups] = useState([]);
-  const [boardId, setBoardId] = useState("")
-  const [mediumId, setMediumId] = useState("")
-  const [gradeId, setGradeId] = useState("")
-  const [subjectGroup, setSubjectGroups] = useState("")
-  const [allField, setAllField] = useState("")
+  const [boardId, setBoardId] = useState('');
+  const [mediumId, setMediumId] = useState('');
+  const [gradeId, setGradeId] = useState('');
+  const [subjectGroup, setSubjectGroups] = useState('');
+  const [allField, setAllField] = useState('');
+  const [openModalUpdate, setOpenModalUpdate] = useState(false);
+
+  const [subjectGroupId, setSubjectGroupId] = useState('');
+  const [updateBoardId, setUpdateBoardId] = useState('');
+  const [updateMediumId, setUpdateMediumId] = useState('');
+  const [updateGradeId, setUpdateGradeId] = useState('');
+  const [updateSubjectGroup, setUpdateSubjectGroup] = useState('');
+  const [dropdownBoardId, setDropdownBoardId] = useState('');
+  const [dropdownMediumId, setDropdownMediumId] = useState('');
+  const [dropdownGradeId, setDropdownGradeId] = useState("")
 
   const state = false;
   const district = false;
@@ -245,7 +258,7 @@ export default function ExamSubjectGroup() {
   const handleGetSubjectGroup = async (gradeId) => {
     console.log({ gradeId });
     const h = {
-      Authorization: `Bearer ${token}`,
+      "Authorization": `Bearer ${token}`,
       'Content-Type': 'application/json',
     };
     try {
@@ -263,31 +276,100 @@ export default function ExamSubjectGroup() {
   };
 
   const addingSubjectGroup = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     const h = {
-      "Authorization": `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
-    }
+    };
     const d = {
       BoardId: boardId,
       MediumId: mediumId,
       GradeId: gradeId,
-      SubjectGroup: subjectGroup
-    }
-    if (boardId === "" || mediumId === "" || gradeId === "" || subjectGroup === "") {
-      setAllField("Please fill all required fields")
+      SubjectGroup: subjectGroup,
+    };
+    if (boardId === '' || mediumId === '' || gradeId === '' || subjectGroup === '') {
+      setAllField('Please fill all required fields');
     } else {
-      setAllField("")
+      setAllField('');
       try {
-        const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}edu/Save-SubjectGroup`, d, { headers: h })
-        console.log(data)
-        if (data.result === "Success") {
-          setOpenModal(false)
-          handleGetSubjectGroup(gradeId)
+        const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}edu/Save-SubjectGroup`, d, {
+          headers: h,
+        });
+        console.log(data);
+        if (data.result === 'Success') {
+          setOpenModal(false);
+          handleGetSubjectGroup(gradeId);
         }
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
+    }
+  };
+
+  const handleEditModal = async (id) => {
+    console.log({ id });
+    setSubjectGroupId(id);
+    setOpenModalUpdate(true);
+
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_DOMAIN_NAME}Edu/get-SubjectGroup-details/${id}`, {
+        headers: h,
+      });
+      console.log({ data });
+      setUpdateBoardId(data.boardId);
+      setUpdateMediumId(data.mediumId);
+      setUpdateGradeId(data.gradeId);
+      setUpdateSubjectGroup(data.subjectGroup);
+      handleBoards(data.boardId);
+      handleGetGrade(data.mediumId);
+      handleGetSubjectGroup(data.gradeId);
+    } catch (error) {
+      console.log({ error });
+    }
+  };
+
+  const handleUpdateSubjectGroup = async (e) => {
+    e.preventDefault()
+    setOpenModalUpdate(false)
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+    if (updateSubjectGroup !== "") {
+      setAllField("")
+      const d = {
+        "id": subjectGroupId,
+        "BoardId": updateBoardId,
+        "MediumId": updateMediumId,
+        "GradeId": updateGradeId,
+        "SubjectGroup": updateSubjectGroup,
+      }
+      try {
+        const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}edu/Save-SubjectGroup`, d, {
+          headers: h,
+        });
+
+        console.log({ data });
+        if (data.result === "Success") {
+          setOpenModalUpdate(false)
+          handleBoards(updateBoardId)
+          handleGetGrade(updateMediumId)
+          handleGetSubjectGroup(updateGradeId)
+          setDropdownBoardId(updateBoardId)
+          setDropdownMediumId(updateMediumId)
+          setDropdownGradeId(updateGradeId)
+        }
+
+      } catch (error) {
+        console.log({ error });
+      }
+    } else {
+      setAllField("Please fill all required fields")
+
     }
   }
 
@@ -326,6 +408,9 @@ export default function ExamSubjectGroup() {
             handleGetGrade={handleGetGrade}
             allGrades={allGrades}
             handleGetSubjectGroup={handleGetSubjectGroup}
+            dropdownBoardId={dropdownBoardId}
+            dropdownMediumId={dropdownMediumId}
+            dropdownGradeId={dropdownGradeId}
           />
 
           <div>
@@ -336,10 +421,13 @@ export default function ExamSubjectGroup() {
                   <Box sx={{ margin: '12px' }}>
                     <FormControl fullWidth>
                       <InputLabel id="demo-simple-select-label">Board</InputLabel>
-                      <Select labelId="demo-simple-select-label" id="demo-simple-select" label="State"
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        label="State"
                         onChange={(e) => {
-                          setBoardId(e.target.value)
-                          handleBoards(e.target.value)
+                          setBoardId(e.target.value);
+                          handleBoards(e.target.value);
                         }}
                       >
                         {allBoards.map((board, index) => {
@@ -355,10 +443,13 @@ export default function ExamSubjectGroup() {
                   <Box sx={{ margin: '12px' }}>
                     <FormControl fullWidth>
                       <InputLabel id="demo-simple-select-label">Medium</InputLabel>
-                      <Select labelId="demo-simple-select-label" id="demo-simple-select" label="State"
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        label="State"
                         onChange={(e) => {
-                          setMediumId(e.target.value)
-                          handleGetGrade(e.target.value)
+                          setMediumId(e.target.value);
+                          handleGetGrade(e.target.value);
                         }}
                       >
                         {allMediums.map((medium, index) => {
@@ -374,7 +465,10 @@ export default function ExamSubjectGroup() {
                   <Box sx={{ margin: '12px' }}>
                     <FormControl fullWidth>
                       <InputLabel id="demo-simple-select-label">Grade</InputLabel>
-                      <Select labelId="demo-simple-select-label" id="demo-simple-select" label="State"
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        label="State"
                         onChange={(e) => setGradeId(e.target.value)}
                       >
                         {allGrades.map((grade, index) => {
@@ -389,17 +483,133 @@ export default function ExamSubjectGroup() {
                   </Box>
 
                   <Box sx={{ margin: '12px' }}>
-                    <TextField fullWidth id="outlined-basic" label="Subject Group" variant="outlined"
+                    <TextField
+                      fullWidth
+                      id="outlined-basic"
+                      label="Subject Group"
+                      variant="outlined"
                       onChange={(e) => setSubjectGroups(e.target.value)}
                     />
                   </Box>
-                  {allField.length > 0 && <Typography sx={{ color: 'red' }} variant="p" gutterBottom>
-                    {allField}
-                  </Typography>}
+                  {allField.length > 0 && (
+                    <Typography sx={{ color: 'red' }} variant="p" gutterBottom>
+                      {allField}
+                    </Typography>
+                  )}
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={() => setOpenModal(false)}>Cancel</Button>
-                  <Button type='submit'>Add</Button>
+                  <Button type="submit">Add</Button>
+                </DialogActions>
+              </form>
+            </Dialog>
+          </div>
+
+          {/* Update Modal */}
+          <div>
+            <Dialog fullWidth open={openModalUpdate} onClose={() => setOpenModal(false)}>
+
+              <form onSubmit={handleUpdateSubjectGroup}>
+                <DialogTitle>Board</DialogTitle>
+                <DialogContent>
+                  <Box sx={{ margin: '12px' }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="demo-simple-select-label">Board</InputLabel>
+
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        label="Board"
+                        value={updateBoardId}
+                        onChange={(e) => {
+                          setUpdateBoardId(e.target.value);
+                          handleBoards(e.target.value)
+                        }}
+                      >
+                        {allBoards.map((board, index) => {
+
+
+                          return (
+                            <MenuItem key={board?.id} value={board?.id}>
+                              {' '}
+                              {board?.boardName}
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  <Box sx={{ margin: '12px' }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="demo-simple-select-label">Medium</InputLabel>
+
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        label="Medium"
+                        value={updateMediumId}
+                        onChange={(e) => {
+                          setUpdateMediumId(e.target.value);
+                        }}
+                      >
+                        {allMediums.map((medium, index) => {
+
+
+                          return (
+                            <MenuItem key={medium?.id} value={medium?.id}>
+                              {' '}
+                              {medium?.mediumName}
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  <Box sx={{ margin: '12px' }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="demo-simple-select-label">Grade</InputLabel>
+
+                      <Select labelId="demo-simple-select-label"
+                        id="demo-simple-"
+                        label="Medium"
+                        value={updateGradeId}
+                        onChange={(e) => {
+                          setUpdateGradeId(e.target.value);
+                        }}
+                      >
+                        {allGrades.map((grade, index) => {
+
+
+                          return (
+                            <MenuItem key={grade?.id} value={grade?.id}>
+                              {' '}
+                              {grade?.grade}
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
+
+                  <Box sx={{ margin: '12px' }}>
+                    <TextField
+                      fullWidth
+                      id="outlined-basic"
+                      // label="Board"
+                      variant="outlined"
+                      value={updateSubjectGroup}
+                      onChange={(e) => setUpdateSubjectGroup(e.target.value)}
+                    />
+                  </Box>
+                  {allField.length > 0 && (
+                    <Typography sx={{ color: 'red' }} variant="p" gutterBottom>
+                      {allField}
+                    </Typography>
+                  )}
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setOpenModalUpdate(false)}>Cancel</Button>
+                  <Button type="submit">Update</Button>
                 </DialogActions>
               </form>
             </Dialog>
@@ -445,6 +655,16 @@ export default function ExamSubjectGroup() {
                         <TableCell align="left">{mediumName}</TableCell>
                         <TableCell align="left">{grade}</TableCell>
                         <TableCell align="left">{subjectGroup}</TableCell>
+                        <TableCell>
+                          <Button
+                            onClick={() => handleEditModal(id)}
+                            size="small"
+                            sx={{ background: '#6c757d', marginRight: '4px' }}
+                            variant="contained"
+                          >
+                            <EditIcon />{' '}
+                          </Button>
+                        </TableCell>
                         {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
                         <TableCell align="left">
                           <Label variant="ghost" color={(status === 'banned' && 'error') || 'success'}>
@@ -485,6 +705,6 @@ export default function ExamSubjectGroup() {
           />
         </Card>
       </Container>
-    </Page >
+    </Page>
   );
 }

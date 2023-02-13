@@ -2,6 +2,8 @@ import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import EditIcon from '@mui/icons-material/Edit';
+
 // material
 import {
   Card,
@@ -47,6 +49,7 @@ const TABLE_HEAD = [
   { id: 'stateId', label: 'State Id', alignRight: false },
   { id: 'stateName', label: 'State Name', alignRight: false },
   { id: 'boardName', label: 'Board Name', alignRight: false },
+  { id: 'action', label: 'Action', alignRight: false },
   { id: '' },
 ];
 
@@ -98,9 +101,15 @@ export default function ExamBoard() {
   const [allField, setAllField] = useState('');
   const [token, setToken] = useState('');
   const [allStates, setAllStates] = useState([]);
-  const [stateId, setStateId] = useState("")
-  const [boardName, setBoardName] = useState("")
-  const [allBoard, setAllBoard] = useState([])
+  const [stateId, setStateId] = useState('');
+  const [boardName, setBoardName] = useState('');
+  const [allBoard, setAllBoard] = useState([]);
+  const [openModalUpdate, setOpenModalUpdate] = useState(false);
+  const [boardData, setBoardData] = useState([]);
+  const [stateDd, setStateDd] = useState('');
+  const [stateUpdate, setStateUpdate] = useState('');
+  const [boardNameUpdate, setBoardNameUpdate] = useState('');
+  const [boardId, setBoardId] = useState("")
 
   const state = false;
   const district = false;
@@ -116,7 +125,7 @@ export default function ExamBoard() {
     if (tok !== null || tok !== undefined) {
       setToken(tok);
       getAllState(tok);
-      getAllBoards(tok)
+      getAllBoards(tok);
     }
   }, []);
 
@@ -175,7 +184,7 @@ export default function ExamBoard() {
 
   const getAllState = async (token) => {
     const h = {
-      "Authorization": `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     };
     try {
@@ -187,47 +196,107 @@ export default function ExamBoard() {
     }
   };
 
-
-
   const addingBoard = async (e) => {
     e.preventDefault();
     const h = {
-      "Authorization": `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     };
     const d = {
       StateId: stateId,
-      BoardName: boardName
-    }
-    if (stateId === "" || boardName === " ") {
-      setAllField("Please fill all required fields")
+      BoardName: boardName,
+    };
+    if (stateId === '' || boardName === ' ') {
+      setAllField('Please fill all required fields');
     } else {
-      setAllField("")
+      setAllField('');
       try {
         const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}edu/Save-Board`, d, { headers: h });
-        console.log(data)
-        if (data.result === "Success") {
-          setOpenModal(false)
+        console.log(data);
+        if (data.result === 'Success') {
+          setOpenModal(false);
         }
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
     }
-  }
+  };
 
   const getAllBoards = async (token) => {
     const h = {
-      "Authorization": `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     };
     try {
       const { data } = await axios.get(`${process.env.REACT_APP_DOMAIN_NAME}edu/get-Board-all`, { headers: h });
       console.log(data);
-      setAllBoard(data)
+      setAllBoard(data);
     } catch (error) {
       console.log(error);
     }
-  }
+  };
+
+  const handleEditModal = async (id) => {
+    console.log({ id });
+    setBoardId(id)
+    setOpenModalUpdate(true);
+
+    const h = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_DOMAIN_NAME}Edu/get-Board-details/${id}`, {
+        headers: h,
+      });
+      console.log({ data });
+      setBoardData(data);
+      allStates.forEach((state) => {
+        console.log(state.id)
+        if (state.id === data.stateId) {
+          setStateDd(state.id);
+        }
+      });
+      setBoardNameUpdate(data.boardName);
+    } catch (error) {
+      console.log({ error });
+    }
+  };
+
+  const updateBoard = async (e) => {
+    e.preventDefault();
+    console.log({ stateDd })
+
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+
+    const d = {
+      "id": boardId,
+      "stateId": stateDd,
+      "boardName": boardNameUpdate,
+    };
+    if (boardNameUpdate !== "") {
+      setAllField("")
+      try {
+        const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}edu/Save-Board`, d, {
+          headers: h,
+        });
+        console.log({ data });
+        if (data.result === "Success") {
+          setOpenModalUpdate(false)
+          getAllBoards(token)
+        }
+      } catch (error) {
+        console.log({ error });
+      }
+    } else {
+      setAllField("Please fill all required fields")
+
+    }
+
+  };
 
   return (
     <Page title="User">
@@ -258,7 +327,7 @@ export default function ExamBoard() {
             handleModal={handleModal}
             allStates={allStates}
           />
-
+          {/* Add Modal */}
           <div>
             <Dialog fullWidth open={openModal} onClose={() => setOpenModal(false)}>
               <form onSubmit={addingBoard}>
@@ -267,21 +336,31 @@ export default function ExamBoard() {
                   <Box sx={{ margin: '12px' }}>
                     <FormControl fullWidth>
                       <InputLabel id="demo-simple-select-label">State</InputLabel>
-                      <Select labelId="demo-simple-select-label" id="demo-simple-select" label="State"
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        label="State"
                         onChange={(e) => setStateId(e.target.value)}
                       >
                         {allStates.map((state, index) => {
-                          console.log({ state })
+                          // console.log({ state });
                           return (
-                            <MenuItem key={index} value={state.stateId}> {state.stateName}</MenuItem>
-                          )
+                            <MenuItem key={index} value={state.id}>
+                              {' '}
+                              {state.stateName}
+                            </MenuItem>
+                          );
                         })}
                       </Select>
                     </FormControl>
                   </Box>
 
                   <Box sx={{ margin: '12px' }}>
-                    <TextField fullWidth id="outlined-basic" label="Board" variant="outlined"
+                    <TextField
+                      fullWidth
+                      id="outlined-basic"
+                      label="Board"
+                      variant="outlined"
                       onChange={(e) => setBoardName(e.target.value)}
                     />
                   </Box>
@@ -293,7 +372,65 @@ export default function ExamBoard() {
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={() => setOpenModal(false)}>Cancel</Button>
-                  <Button type='submit'>Add</Button>
+                  <Button type="submit">Add</Button>
+                </DialogActions>
+              </form>
+            </Dialog>
+          </div>
+          {/* Update Modal */}
+          <div>
+            <Dialog fullWidth open={openModalUpdate} onClose={() => setOpenModal(false)}>
+              {console.log({ boardData })}
+              <form onSubmit={updateBoard}>
+                <DialogTitle>Board</DialogTitle>
+                <DialogContent>
+                  <Box sx={{ margin: '12px' }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="demo-simple-select-label">State</InputLabel>
+
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        label="State"
+                        value={stateDd}
+                        onChange={(e) => {
+                          setStateDd(e.target.value);
+                        }}
+                      >
+                        {allStates.map((state, index) => {
+                          // console.log({ state });
+                          // console.log(boardData?.stateId === state.id, state.stateId, boardData?.stateId, state.id);
+
+                          return (
+                            <MenuItem key={state?.id} value={state.id}>
+                              {' '}
+                              {state.stateName}
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
+
+                  <Box sx={{ margin: '12px' }}>
+                    <TextField
+                      fullWidth
+                      id="outlined-basic"
+                      // label="Board"
+                      variant="outlined"
+                      value={boardNameUpdate}
+                      onChange={(e) => setBoardNameUpdate(e.target.value)}
+                    />
+                  </Box>
+                  {allField.length > 0 && (
+                    <Typography sx={{ color: 'red' }} variant="p" gutterBottom>
+                      {allField}
+                    </Typography>
+                  )}
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setOpenModalUpdate(false)}>Cancel</Button>
+                  <Button type="submit">Update</Button>
                 </DialogActions>
               </form>
             </Dialog>
@@ -313,7 +450,7 @@ export default function ExamBoard() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => {
-                    const { stateId, stateName, boardName } = row;
+                    const { id, stateId, stateName, boardName } = row;
                     const isItemSelected = selected.indexOf(state) !== -1;
                     return (
                       <TableRow
@@ -337,6 +474,16 @@ export default function ExamBoard() {
                         <TableCell align="left">{stateId}</TableCell>
                         <TableCell align="left">{stateName}</TableCell>
                         <TableCell align="left">{boardName}</TableCell>
+                        <TableCell>
+                          <Button
+                            onClick={() => handleEditModal(id)}
+                            size="small"
+                            sx={{ background: '#6c757d', marginRight: '4px' }}
+                            variant="contained"
+                          >
+                            <EditIcon />{' '}
+                          </Button>
+                        </TableCell>
                         {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
                         <TableCell align="left">
                           <Label variant="ghost" color={(status === 'banned' && 'error') || 'success'}>

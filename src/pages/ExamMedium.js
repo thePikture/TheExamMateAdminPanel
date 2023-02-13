@@ -3,6 +3,8 @@ import { sentenceCase } from 'change-case';
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 // material
+import EditIcon from '@mui/icons-material/Edit';
+
 import {
   Card,
   Table,
@@ -47,6 +49,7 @@ const TABLE_HEAD = [
   { id: 'boardId', label: 'Board Id', alignRight: false },
   { id: 'boardName', label: 'Board Name', alignRight: false },
   { id: 'mediumName', label: 'Medium Name', alignRight: false },
+  { id: 'action', label: 'Action', alignRight: false },
   { id: '' },
 ];
 
@@ -102,6 +105,11 @@ export default function ExamMedium() {
   const [boardId, setBoardId] = useState("")
   const [mediumName, setMediumName] = useState("")
   const [allField, setAllField] = useState("")
+  const [openModalUpdate, setOpenModalUpdate] = useState(false);
+  const [mediumId, setMediumId] = useState("")
+  const [updateBoardId, setUpdateBoardId] = useState("")
+  const [updateMediumName, setUpdateMediumName] = useState("")
+  const [dropdownBoardId, setDropdownBoardId] = useState("")
 
   const state = false;
   const district = false;
@@ -190,6 +198,7 @@ export default function ExamMedium() {
 
   const handleBoards = async (boardId) => {
     console.log({ boardId });
+    setDropdownBoardId(boardId)
     const h = {
       "Authorization": `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -231,6 +240,60 @@ export default function ExamMedium() {
       }
     }
   }
+  const handleEditModal = async (id) => {
+    console.log({ id });
+    setMediumId(id)
+    setOpenModalUpdate(true);
+
+    const h = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_DOMAIN_NAME}Edu/get-Medium-details/${id}`, {
+        headers: h,
+      });
+      console.log({ data });
+      setUpdateBoardId(data.boardId)
+      setUpdateMediumName(data.mediumName)
+    } catch (error) {
+      console.log({ error });
+    }
+  };
+
+  const handleUpdateMedium = async (e) => {
+    e.preventDefault()
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+    const d = {
+      "id": mediumId,
+      'BoardId': updateBoardId,
+      "MediumName": updateMediumName
+
+    }
+    if (updateMediumName !== "") {
+      setAllField("")
+      try {
+        const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}edu/Save-Medium`, d, {
+          headers: h,
+        });
+        console.log({ data });
+        if (data.result === "Success") {
+          setOpenModalUpdate(false)
+          handleBoards(updateBoardId)
+        }
+
+      } catch (error) {
+        console.log({ error });
+      }
+    } else {
+      setAllField("Please fill all required fields")
+
+    }
+
+  }
 
   return (
     <Page title="User">
@@ -262,6 +325,7 @@ export default function ExamMedium() {
             allStates={allStates}
             handleBoards={handleBoards}
             allBoards={allBoards}
+            dropdownBoardId={dropdownBoardId}
           />
 
           <div>
@@ -298,6 +362,64 @@ export default function ExamMedium() {
                 <DialogActions>
                   <Button onClick={() => setOpenModal(false)}>Cancel</Button>
                   <Button type='submit'>Add</Button>
+                </DialogActions>
+              </form>
+            </Dialog>
+          </div>
+
+          {/* Update Modal */}
+          <div>
+            <Dialog fullWidth open={openModalUpdate} onClose={() => setOpenModal(false)}>
+
+              <form onSubmit={handleUpdateMedium}>
+                <DialogTitle>Board</DialogTitle>
+                <DialogContent>
+                  <Box sx={{ margin: '12px' }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="demo-simple-select-label">Board</InputLabel>
+
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        label="State"
+                        value={updateBoardId}
+                        onChange={(e) => {
+                          setUpdateBoardId(e.target.value);
+                        }}
+                      >
+                        {allBoards.map((board, index) => {
+
+
+                          return (
+                            <MenuItem key={board?.id} value={board?.id}>
+                              {' '}
+                              {board?.boardName}
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
+
+                  <Box sx={{ margin: '12px' }}>
+                    <TextField
+                      fullWidth
+                      id="outlined-basic"
+                      // label="Board"
+                      variant="outlined"
+                      value={updateMediumName}
+                      onChange={(e) => setUpdateMediumName(e.target.value)}
+                    />
+                  </Box>
+                  {allField.length > 0 && (
+                    <Typography sx={{ color: 'red' }} variant="p" gutterBottom>
+                      {allField}
+                    </Typography>
+                  )}
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setOpenModalUpdate(false)}>Cancel</Button>
+                  <Button type="submit">Update</Button>
                 </DialogActions>
               </form>
             </Dialog>
@@ -342,6 +464,16 @@ export default function ExamMedium() {
                         <TableCell align="left">{boardId}</TableCell>
                         <TableCell align="left">{boardName}</TableCell>
                         <TableCell align="left">{mediumName}</TableCell>
+                        <TableCell>
+                          <Button
+                            onClick={() => handleEditModal(id)}
+                            size="small"
+                            sx={{ background: '#6c757d', marginRight: '4px' }}
+                            variant="contained"
+                          >
+                            <EditIcon />{' '}
+                          </Button>
+                        </TableCell>
                         {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
                         <TableCell align="left">
                           <Label variant="ghost" color={(status === 'banned' && 'error') || 'success'}>

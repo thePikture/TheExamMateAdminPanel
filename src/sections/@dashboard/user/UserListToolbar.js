@@ -80,6 +80,9 @@ export default function UserListToolbar({
   handleGetSubjectGroup,
   allSubjectGroups,
   handleGetSubjects,
+  dropdownBoardId,
+  dropdownMediumId,
+  dropdownGradeId,
 }) {
   return (
     <RootStyle
@@ -221,6 +224,7 @@ export default function UserListToolbar({
                   labelId="category"
                   id="demo-simple-select"
                   label="Board"
+                  value={dropdownBoardId}
                   onChange={(e) => handleBoards(e.target.value)}
                 >
                   {allBoards.map((board, index) => {
@@ -251,6 +255,7 @@ export default function UserListToolbar({
                   labelId="category"
                   id="demo-simple-select"
                   label="Board"
+                  value={dropdownMediumId}
                   onChange={(e) => handleGetGrade(e.target.value)}
                 >
                   {allMediums.map((medium, index) => {
@@ -282,6 +287,7 @@ export default function UserListToolbar({
                   labelId="category"
                   id="demo-simple-select"
                   label="Grade"
+                  value={dropdownGradeId}
                   onChange={(e) => {
                     handleGetSubjectGroup(e.target.value);
                   }}

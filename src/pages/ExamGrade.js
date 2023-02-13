@@ -3,6 +3,8 @@ import { sentenceCase } from 'change-case';
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 // material
+import EditIcon from '@mui/icons-material/Edit';
+
 import {
   Card,
   Table,
@@ -47,6 +49,7 @@ const TABLE_HEAD = [
   { id: 'boardName', label: 'Board Name', alignRight: false },
   { id: 'mediumName', label: 'Medium Name', alignRight: false },
   { id: 'grade', label: 'Grade', alignRight: false },
+  { id: 'action', label: 'Action', alignRight: false },
   { id: '' },
 ];
 
@@ -104,6 +107,14 @@ export default function ExamGrade() {
   const [mediumId, setMediumId] = useState("")
   const [allField, setAllField] = useState("")
   const [gradeName, setGradeName] = useState("")
+  const [openModalUpdate, setOpenModalUpdate] = useState(false);
+  const [gradeId, setGradeId] = useState("")
+  const [updateBoardId, setUpdateBoardId] = useState("")
+  const [updateMediumId, setUpdateMediumId] = useState("")
+  const [updateGradeName, setUpdateGradeName] = useState("")
+  const [dropdownBoardId, setDropdownBoardId] = useState("")
+  const [dropdownMediumId, setDropdownMediumId] = useState("")
+
 
   const state = false;
   const district = false;
@@ -192,6 +203,7 @@ export default function ExamGrade() {
 
   const handleBoards = async (boardId) => {
     console.log({ boardId });
+    setDropdownBoardId(boardId)
     const h = {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -209,6 +221,7 @@ export default function ExamGrade() {
 
   const handleGetGrade = async (mediumId) => {
     console.log({ mediumId });
+    setDropdownMediumId(mediumId)
     const h = {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -252,6 +265,66 @@ export default function ExamGrade() {
     }
   }
 
+  const handleEditModal = async (id) => {
+    console.log({ id });
+    setGradeId(id)
+    setOpenModalUpdate(true);
+
+    const h = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_DOMAIN_NAME}Edu/get-Grade-details/${id}`, {
+        headers: h,
+      });
+      console.log({ data });
+      setUpdateBoardId(data.boardId)
+      setUpdateMediumId(data.mediumId)
+      setUpdateGradeName(data.grade)
+      handleBoards(data.boardId)
+    } catch (error) {
+      console.log({ error });
+    }
+  };
+
+  const handleUpdateGrade = async (e) => {
+    e.preventDefault()
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+    if (updateGradeName !== "") {
+      setAllField("")
+      const d = {
+        "id": gradeId,
+        "BoardId": updateBoardId,
+        "MediumId": updateMediumId,
+        "Grade": updateGradeName,
+      }
+      try {
+        const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}edu/Save-Grade`, d, {
+          headers: h,
+        });
+
+        console.log({ data });
+        if (data.result === "Success") {
+          setOpenModalUpdate(false)
+          handleBoards(updateBoardId)
+          handleGetGrade(updateMediumId)
+          setDropdownBoardId(updateBoardId)
+          setDropdownMediumId(updateMediumId)
+        }
+
+      } catch (error) {
+        console.log({ error });
+      }
+    } else {
+      setAllField("Please fill all required fields")
+
+    }
+  }
+
   return (
     <Page title="User">
       <Container>
@@ -285,6 +358,8 @@ export default function ExamGrade() {
             allBoards={allBoards}
             allMediums={allMediums}
             handleGetGrade={handleGetGrade}
+            dropdownBoardId={dropdownBoardId}
+            dropdownMediumId={dropdownMediumId}
           />
 
           <div>
@@ -345,6 +420,93 @@ export default function ExamGrade() {
             </Dialog>
           </div>
 
+          {/* Update Modal */}
+          <div>
+            <Dialog fullWidth open={openModalUpdate} onClose={() => setOpenModal(false)}>
+
+              <form onSubmit={handleUpdateGrade}>
+                <DialogTitle>Board</DialogTitle>
+                <DialogContent>
+                  <Box sx={{ margin: '12px' }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="demo-simple-select-label">Board</InputLabel>
+
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        label="Board"
+                        value={updateBoardId}
+                        onChange={(e) => {
+                          setUpdateBoardId(e.target.value);
+                          handleBoards(e.target.value)
+                        }}
+                      >
+                        {allBoards.map((board, index) => {
+
+
+                          return (
+                            <MenuItem key={board?.id} value={board?.id}>
+                              {' '}
+                              {board?.boardName}
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  <Box sx={{ margin: '12px' }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="demo-simple-select-label">Medium</InputLabel>
+
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        label="Medium"
+                        value={updateMediumId}
+                        onChange={(e) => {
+                          setUpdateMediumId(e.target.value);
+                        }}
+                      >
+                        {allMediums.map((medium, index) => {
+
+                          console.log({ medium }, {
+                            updateMediumId
+                          });
+                          return (
+                            <MenuItem key={medium?.id} value={medium?.id}>
+                              {' '}
+                              {medium?.mediumName}
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
+
+                  <Box sx={{ margin: '12px' }}>
+                    <TextField
+                      fullWidth
+                      id="outlined-basic"
+                      // label="Board"
+                      variant="outlined"
+                      value={updateGradeName}
+                      onChange={(e) => setUpdateGradeName(e.target.value)}
+                    />
+                  </Box>
+                  {allField.length > 0 && (
+                    <Typography sx={{ color: 'red' }} variant="p" gutterBottom>
+                      {allField}
+                    </Typography>
+                  )}
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setOpenModalUpdate(false)}>Cancel</Button>
+                  <Button type="submit">Update</Button>
+                </DialogActions>
+              </form>
+            </Dialog>
+          </div>
+
           <Scrollbar>
             <TableContainer sx={{ minWidth: 800 }}>
               <Table>
@@ -384,6 +546,16 @@ export default function ExamGrade() {
                         <TableCell align="left">{boardName}</TableCell>
                         <TableCell align="left">{mediumName}</TableCell>
                         <TableCell align="left">{grade}</TableCell>
+                        <TableCell>
+                          <Button
+                            onClick={() => handleEditModal(id)}
+                            size="small"
+                            sx={{ background: '#6c757d', marginRight: '4px' }}
+                            variant="contained"
+                          >
+                            <EditIcon />{' '}
+                          </Button>
+                        </TableCell>
                         {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
                         <TableCell align="left">
                           <Label variant="ghost" color={(status === 'banned' && 'error') || 'success'}>

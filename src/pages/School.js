@@ -1,7 +1,7 @@
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
 import { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 // material
 import {
   Card,
@@ -81,6 +81,8 @@ export default function School() {
 
   const [filterName, setFilterName] = useState('');
 
+  const navigate = useNavigate()
+
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [allStates, setAllStates] = useState([]);
   const state = false;
@@ -90,6 +92,7 @@ export default function School() {
   const board = false;
   const grade = false;
   const search = false;
+  const add = true;
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -140,6 +143,10 @@ export default function School() {
 
   const isUserNotFound = filteredUsers.length === 0;
 
+  const handleModal = () => {
+    navigate('/dashboard/add-school')
+  }
+
   return (
     <Page title="User">
       <Container>
@@ -163,7 +170,9 @@ export default function School() {
             school={school}
             board={board}
             grade={grade}
+            add={add}
             search={search}
+            handleModal={handleModal}
           />
 
           <Scrollbar>

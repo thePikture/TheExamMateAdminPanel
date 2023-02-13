@@ -104,6 +104,7 @@ export default function Student() {
   const [allField, setAllField] = useState("")
   const [token, setToken] = useState("")
   const [allStates, setAllStates] = useState([])
+  const [stateUniqueId, setStateUniqueId] = useState("")
 
   const state = false;
   const district = false;
@@ -221,8 +222,45 @@ export default function Student() {
 
   const handleEditModal = async (id) => {
     setOpenModalUpdate(true)
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": 'application/json',
+    }
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_DOMAIN_NAME}Geo/get-state-details/${id}`, { headers: h })
+      console.log(data)
+      setStateUniqueId(data.id)
+      setStateId(data.stateId)
+      setStateCode(data.stateCode)
+      setStateName(data.stateName)
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
-
+  const updatingState = async (e) => {
+    e.preventDefault();
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": 'application/json',
+    }
+    const d = {
+      Id: stateUniqueId,
+      StateId: stateId,
+      StateCode: stateCode,
+      StateName: stateName
+    }
+    console.log(d)
+    try {
+      const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}Geo/save-State`, d, { headers: h })
+      console.log(data)
+      if (data.result === "Success") {
+        setOpenModalUpdate(false)
+        getAllState(token)
+      }
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   return (
@@ -333,21 +371,21 @@ export default function Student() {
 
                   <div>
                     <Dialog fullWidth open={openModalUpdate}>
-                      <form onSubmit={addingState}>
+                      <form onSubmit={updatingState}>
                         <DialogTitle>State</DialogTitle>
                         <DialogContent>
                           <Box sx={{ margin: '12px' }}>
-                            <TextField fullWidth id="outlined-basic" label="State Id" variant="outlined"
+                            <TextField fullWidth id="outlined-basic" label="State Id" value={stateId} variant="outlined"
                               onChange={(e) => setStateId(e.target.value)}
                             />
                           </Box>
                           <Box sx={{ margin: '12px' }}>
-                            <TextField fullWidth id="outlined-basic" label="State Code" variant="outlined"
+                            <TextField fullWidth id="outlined-basic" label="State Code" value={stateCode} variant="outlined"
                               onChange={(e) => setStateCode(e.target.value)}
                             />
                           </Box>
                           <Box sx={{ margin: '12px' }}>
-                            <TextField fullWidth id="outlined-basic" label="State Name" variant="outlined"
+                            <TextField fullWidth id="outlined-basic" label="State Name" value={stateName} variant="outlined"
                               onChange={(e) => setStateName(e.target.value)}
                             />
                           </Box>
@@ -357,7 +395,7 @@ export default function Student() {
                         </DialogContent>
                         <DialogActions>
                           <Button onClick={() => setOpenModalUpdate(false)}>Cancel</Button>
-                          <Button type='submit'>Add</Button>
+                          <Button type='submit'>Update</Button>
                         </DialogActions>
                       </form>
                     </Dialog>

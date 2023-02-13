@@ -3,6 +3,7 @@ import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import EditIcon from '@mui/icons-material/Edit';
 // material
 import {
   Card,
@@ -48,6 +49,7 @@ const TABLE_HEAD = [
   { id: 'stateName', label: 'State Name', alignRight: false },
   { id: 'districtCode', label: 'District Code', alignRight: false },
   { id: 'districtName', label: 'District Name', alignRight: false },
+  { id: 'action', label: 'Action', alignRight: false },
 ];
 
 // ----------------------------------------------------------------------
@@ -96,6 +98,7 @@ export default function Student() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [openModal, setOpenModal] = useState(false);
+  const [openModalUpdate, setOpenModalUpdate] = useState(false);
   const [token, setToken] = useState("")
   const [allStates, setAllStates] = useState([])
 
@@ -105,6 +108,10 @@ export default function Student() {
   const [districtCode, setDistrictsCode] = useState("")
   const [districtName, setDistrictName] = useState("")
   const [selectedStateId, setSelectedStateId] = useState("")
+  const [updateDisId, setUpdateDisId] = useState("")
+  const [updateStateId, setUpdateStateId] = useState("")
+  const [updateDistrictCode, setUpdateDistrictsCode] = useState("")
+  const [updateDistrictName, setUpdateDistrictName] = useState("")
 
   const state = true;
   const district = false;
@@ -206,7 +213,6 @@ export default function Student() {
       const { data } = await axios.get(`${process.env.REACT_APP_DOMAIN_NAME}Geo/get-District-bystateId/${stateId}`, { headers: h })
       console.log(data)
       filteredUsers = applySortFilter(data, getComparator(order, orderBy), filterName);
-      // setAllStates(data)
       setAllDistricts(data)
     } catch (error) {
       console.log(error)
@@ -238,6 +244,49 @@ export default function Student() {
       } catch (error) {
         console.log(error)
       }
+    }
+  }
+
+  const handleEditModal = async (id) => {
+    setOpenModalUpdate(true)
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": 'application/json',
+    }
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_DOMAIN_NAME}Geo/get-district-details/${id}`, { headers: h })
+      console.log(data)
+      setUpdateDisId(data.id)
+      setUpdateStateId(data.stateId)
+      setUpdateDistrictsCode(data.districtCode)
+      setUpdateDistrictName(data.districtName)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const updatingDistrict = async (e) => {
+    e.preventDefault()
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": 'application/json',
+    }
+    const d = {
+      Id: updateDisId,
+      StateId: updateStateId,
+      DistrictCode: updateDistrictCode,
+      DistrictName: updateDistrictName
+    }
+    try {
+      const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}Geo/save-District`, d, { headers: h })
+      console.log(data)
+      if (data.result === "Success") {
+        setOpenModalUpdate(false)
+        getAllState(token)
+        handleSearch(stateId)
+      }
+    } catch (error) {
+      console.log(error)
     }
   }
 
@@ -328,7 +377,7 @@ export default function Student() {
                 <TableBody>
                   {console.log({ filteredUsers })}
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { stateId, stateCode, stateName, districtCode, districtName } = row;
+                    const { id, stateId, stateCode, stateName, districtCode, districtName } = row;
                     const isItemSelected = selected.indexOf(state) !== -1;
                     return (
                       <TableRow
@@ -353,15 +402,54 @@ export default function Student() {
                         <TableCell align="left">{stateName}</TableCell>
                         <TableCell align="left">{districtCode}</TableCell>
                         <TableCell align="left">{districtName}</TableCell>
-                        {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
-                        <TableCell align="left">
-                          <Label variant="ghost" color={(status === 'banned' && 'error') || 'success'}>
-                            {sentenceCase(status)}
-                          </Label>
-                        </TableCell> */}
+                        <TableCell>
+                          <Button onClick={() => handleEditModal(id)} size='small' sx={{ background: "#6c757d", marginRight: "4px" }} variant="contained"><EditIcon /> </Button>
+                        </TableCell>
                       </TableRow>
                     );
                   })}
+
+                  <div>
+                    <Dialog fullWidth open={openModalUpdate}>
+                      <form onSubmit={updatingDistrict}>
+                        <DialogContent>
+                          <DialogTitle>District</DialogTitle>
+                          <Box sx={{ margin: '12px' }}>
+                            <FormControl fullWidth>
+                              <InputLabel id="demo-simple-select-label">State</InputLabel>
+                              <Select labelId="demo-simple-select-label" value={updateStateId} id="demo-simple-select" label="State"
+                                onChange={(e) => setUpdateStateId(e.target.value)}
+                              >
+                                {allStates.map((item) => {
+                                  return (
+                                    <MenuItem value={item.id}>{item.stateName}</MenuItem>
+                                  )
+                                })}
+                              </Select>
+                            </FormControl>
+                          </Box>
+                          <Box sx={{ margin: '12px' }}>
+                            <TextField fullWidth id="outlined-basic" value={updateDistrictCode} label="District Code" variant="outlined"
+                              onChange={(e) => setUpdateDistrictsCode(e.target.value)}
+                            />
+                          </Box>
+                          <Box sx={{ margin: '12px' }}>
+                            <TextField fullWidth id="outlined-basic" value={updateDistrictName} label="District Name" variant="outlined"
+                              onChange={(e) => setUpdateDistrictName(e.target.value)}
+                            />
+                          </Box>
+                          {allField.length > 0 && <Typography sx={{ color: 'red' }} variant="p" gutterBottom>
+                            {allField}
+                          </Typography>}
+                        </DialogContent>
+                        <DialogActions>
+                          <Button onClick={() => setOpenModalUpdate(false)}>Cancel</Button>
+                          <Button type='submit'>Update</Button>
+                        </DialogActions>
+                      </form>
+                    </Dialog>
+                  </div>
+
                   {emptyRows > 0 && (
                     <TableRow style={{ height: 53 * emptyRows }}>
                       <TableCell colSpan={6} />

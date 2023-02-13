@@ -3,6 +3,7 @@ import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import EditIcon from '@mui/icons-material/Edit';
 // material
 import {
   Card,
@@ -95,6 +96,7 @@ export default function Student() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const [openModal, setOpenModal] = useState(false);
+  const [openModalUpdate, setOpenModalUpdate] = useState(false);
   const [token, setToken] = useState('');
   const [allStates, setAllStates] = useState([]);
   const [allDistricts, setAllDistricts] = useState([]);
@@ -104,6 +106,11 @@ export default function Student() {
   const [districtId, setDistrictId] = useState('');
   const [talukCode, setTalukCode] = useState('');
   const [talukName, setTalukName] = useState('');
+  const [updateStateId, setUpdateStateId] = useState('');
+  const [updateDistrictId, setUpdateDistrictId] = useState('');
+  const [updateTalukCode, setUpdateTalukCode] = useState('');
+  const [updateTalukName, setUpdateTalukName] = useState('');
+  const [updateTalukId, setUpdateTalukId] = useState("")
 
   const state = true;
   const district = true;
@@ -258,6 +265,51 @@ export default function Student() {
     setDistrictId(e.target.value)
   }
 
+  const handleEditModal = async (id) => {
+    setOpenModalUpdate(true)
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": 'application/json',
+    }
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_DOMAIN_NAME}Geo/get-Taluk-details/${id}`, { headers: h })
+      console.log(data)
+      setUpdateTalukId(data.id)
+      setUpdateStateId(data.stateId)
+      setUpdateDistrictId(data.districtId)
+      setUpdateTalukCode(data.blockCode)
+      setUpdateTalukName(data.blockName)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const updateTaluk = async (e) => {
+    e.preventDefault()
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": 'application/json',
+    }
+    const d = {
+      Id: updateTalukId,
+      StateId: updateStateId,
+      DistrictId: updateDistrictId,
+      BlockCode: updateTalukCode,
+      BlockName: updateTalukName
+    }
+    try {
+      const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}Geo/save-Block`, d, { headers: h })
+      console.log(data)
+      if (data.result === "Success") {
+        setOpenModalUpdate(false)
+        getAllState(token)
+        handleSearch(stateId)
+        handleSearchTaluk(districtId)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   return (
     <Page title="User">
@@ -377,7 +429,7 @@ export default function Student() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { stateId, stateName, districtName, blockCode, blockName } = row;
+                    const { id, stateId, stateName, districtName, blockCode, blockName } = row;
                     const isItemSelected = selected.indexOf(state) !== -1;
                     return (
                       <TableRow
@@ -402,15 +454,91 @@ export default function Student() {
                         <TableCell align="left">{districtName}</TableCell>
                         <TableCell align="left">{blockCode}</TableCell>
                         <TableCell align="left">{blockName}</TableCell>
-                        {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
-                        <TableCell align="left">
-                          <Label variant="ghost" color={(status === 'banned' && 'error') || 'success'}>
-                            {sentenceCase(status)}
-                          </Label>
-                        </TableCell> */}
+                        <TableCell>
+                          <Button onClick={() => handleEditModal(id)} size='small' sx={{ background: "#6c757d", marginRight: "4px" }} variant="contained"><EditIcon /> </Button>
+                        </TableCell>
                       </TableRow>
                     );
                   })}
+
+                  <div>
+                    <Dialog fullWidth open={openModalUpdate}>
+                      <form onSubmit={updateTaluk}>
+                        <DialogContent>
+                          <DialogTitle>Taluk</DialogTitle>
+                          <Box sx={{ margin: '12px' }}>
+                            <FormControl fullWidth>
+                              <InputLabel id="demo-simple-select-label">State</InputLabel>
+                              <Select
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                label="State"
+                                value={updateStateId}
+                                onChange={(e) => {
+                                  setUpdateStateId(e.target.value)
+                                  handleSearch(e.target.value)
+                                }}
+                              >
+                                {allStates.map((item) => {
+                                  console.log(item)
+                                  return <MenuItem value={item.id}>{item.stateName}</MenuItem>;
+                                })}
+                              </Select>
+                            </FormControl>
+                          </Box>
+                          <Box sx={{ margin: '12px' }}>
+                            <FormControl fullWidth>
+                              <InputLabel id="demo-simple-select-label1">District</InputLabel>
+                              <Select
+                                labelId="demo-simple-select-label1"
+                                id="demo-simple-select1"
+                                label="District"
+                                value={updateDistrictId}
+                                onChange={(e) =>
+                                  setUpdateDistrictId(e.target.value)
+                                }
+                              >
+                                {allDistricts.map((item) => {
+                                  console.log({ item })
+                                  return <MenuItem key={item.id} value={item.id}>{item.districtName}</MenuItem>;
+                                })}
+                              </Select>
+                            </FormControl>
+                          </Box>
+                          <Box sx={{ margin: '12px' }}>
+                            <TextField
+                              fullWidth
+                              id="outlined-basic"
+                              label="Taluk Code"
+                              variant="outlined"
+                              value={updateTalukCode}
+                              onChange={(e) => setUpdateTalukCode(e.target.value)}
+                            />
+                          </Box>
+                          <Box sx={{ margin: '12px' }}>
+                            <TextField
+                              fullWidth
+                              id="outlined-basic"
+                              label="Taluk Name"
+                              variant="outlined"
+                              value={updateTalukName}
+                              onChange={(e) => setUpdateTalukName(e.target.value)}
+                            />
+                          </Box>
+                          {allField.length > 0 && (
+                            <Typography sx={{ color: 'red' }} variant="p" gutterBottom>
+                              {allField}
+                            </Typography>
+                          )}
+                        </DialogContent>
+                        <DialogActions>
+                          <Button onClick={() => setOpenModalUpdate(false)}>Cancel</Button>
+                          <Button type="submit">Update</Button>
+                        </DialogActions>
+                      </form>
+                    </Dialog>
+                  </div>
+
                   {emptyRows > 0 && (
                     <TableRow style={{ height: 53 * emptyRows }}>
                       <TableCell colSpan={6} />
@@ -442,6 +570,6 @@ export default function Student() {
           />
         </Card>
       </Container>
-    </Page>
+    </Page >
   );
 }

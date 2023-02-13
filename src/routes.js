@@ -19,6 +19,7 @@ import ExamSubjectGroup from './pages/ExamSubjectGroup';
 import ExamSubject from './pages/ExamSubject';
 import ExamGrade from './pages/ExamGrade';
 import School from './pages/School';
+import AddSchool from './pages/AddSchool';
 
 // ----------------------------------------------------------------------
 
@@ -41,6 +42,7 @@ export default function Router({ loggedIn }) {
         { path: 'exam-subject-group', element: <ExamSubjectGroup /> },
         { path: 'exam-subject', element: <ExamSubject /> },
         { path: 'school', element: <School /> },
+        { path: 'add-school', element: <AddSchool /> },
       ],
     },
     {

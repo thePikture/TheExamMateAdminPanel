@@ -83,6 +83,7 @@ export default function UserListToolbar({
   dropdownBoardId,
   dropdownMediumId,
   dropdownGradeId,
+  dropdownSubjectGroupId,
 }) {
   return (
     <RootStyle
@@ -321,6 +322,7 @@ export default function UserListToolbar({
                   labelId="category"
                   id="demo-simple-select"
                   label="Grade"
+                  value={dropdownSubjectGroupId}
                   onChange={(e) => {
                     handleGetSubjects(e.target.value);
                   }}

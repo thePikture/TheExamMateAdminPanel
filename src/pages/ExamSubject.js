@@ -3,6 +3,8 @@ import { sentenceCase } from 'change-case';
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 // material
+import EditIcon from '@mui/icons-material/Edit';
+
 import {
   Card,
   Table,
@@ -49,6 +51,7 @@ const TABLE_HEAD = [
   { id: 'grade', label: 'Grade', alignRight: false },
   { id: 'subjectGroup', label: 'Subject Group', alignRight: false },
   { id: 'subject', label: 'Subject', alignRight: false },
+  { id: 'action', label: 'Action', alignRight: false },
   { id: '' },
 ];
 
@@ -110,6 +113,19 @@ export default function ExamSubject() {
   const [subject, setSubject] = useState("")
   const [subjectGroups, setSubjectGroups] = useState("")
   const [allField, setAllField] = useState("")
+  const [openModalUpdate, setOpenModalUpdate] = useState(false);
+
+  const [subjectId, setSubjectId] = useState('');
+  const [updateBoardId, setUpdateBoardId] = useState('');
+  const [updateMediumId, setUpdateMediumId] = useState('');
+  const [updateGradeId, setUpdateGradeId] = useState('');
+  const [updateSubjectGroupId, setUpdateSubjectGroupId] = useState('');
+  const [updateSubject, setUpdateSubject] = useState('');
+  const [dropdownBoardId, setDropdownBoardId] = useState('');
+  const [dropdownMediumId, setDropdownMediumId] = useState('');
+  const [dropdownGradeId, setDropdownGradeId] = useState("")
+  const [dropdownSubjectGroupId, setDropdownSubjectGroupId] = useState("")
+
 
   const state = false;
   const district = false;
@@ -201,6 +217,7 @@ export default function ExamSubject() {
 
   const handleBoards = async (boardId) => {
     console.log({ boardId });
+    setDropdownBoardId(boardId)
     const h = {
       "Authorization": `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -218,6 +235,7 @@ export default function ExamSubject() {
 
   const handleGetGrade = async (mediumId) => {
     console.log({ mediumId });
+    setDropdownMediumId(mediumId)
     const h = {
       "Authorization": `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -234,6 +252,7 @@ export default function ExamSubject() {
   };
   const handleGetSubjectGroup = async (gradeId) => {
     console.log({ gradeId });
+    setDropdownGradeId(gradeId)
     const h = {
       "Authorization": `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -254,6 +273,7 @@ export default function ExamSubject() {
 
   const handleGetSubjects = async (subjectGroupId) => {
     console.log({ subjectGroupId });
+    setDropdownSubjectGroupId(subjectGroupId)
     const h = {
       "Authorization": `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -302,6 +322,74 @@ export default function ExamSubject() {
     }
   }
 
+  const handleEditModal = async (id) => {
+    console.log({ id })
+    setSubjectId(id);
+    setOpenModalUpdate(true);
+
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_DOMAIN_NAME}Edu/get-Subject-details/${id}`, {
+        headers: h,
+      });
+      console.log({ data });
+      setUpdateBoardId(data.boardId);
+      setUpdateMediumId(data.mediumId);
+      setUpdateGradeId(data.gradeId);
+      setUpdateSubjectGroupId(data.subjectGroupId);
+      setUpdateSubject(data.subjectName)
+      handleBoards(data.boardId);
+    } catch (error) {
+      console.log({ error });
+    }
+  }
+
+  const handleUpdateSubject = async (e) => {
+    e.preventDefault()
+    setOpenModalUpdate(false)
+    const h = {
+      "Authorization": `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+    if (updateSubject !== "") {
+      setAllField("")
+      const d = {
+        "id": subjectId,
+        "BoardId": updateBoardId,
+        "MediumId": updateMediumId,
+        "GradeId": updateGradeId,
+        "SubjectGroupId": updateSubjectGroupId,
+        "SubjectName": updateSubject
+      }
+      try {
+        const { data } = await axios.post(`${process.env.REACT_APP_DOMAIN_NAME}edu/Save-Subject`, d, {
+          headers: h,
+        });
+
+        console.log({ data });
+        if (data.result === "Success") {
+          setOpenModalUpdate(false)
+          handleBoards(updateBoardId)
+          handleGetGrade(updateMediumId)
+          handleGetSubjectGroup(updateGradeId)
+          setDropdownBoardId(updateBoardId)
+          setDropdownMediumId(updateMediumId)
+          setDropdownGradeId(updateGradeId)
+          setDropdownSubjectGroupId(updateSubjectGroupId)
+        }
+
+      } catch (error) {
+        console.log({ error });
+      }
+    } else {
+      setAllField("Please fill all required fields")
+
+    }
+  }
+
   return (
     <Page title="User">
       <Container>
@@ -340,6 +428,10 @@ export default function ExamSubject() {
             handleGetSubjectGroup={handleGetSubjectGroup}
             allSubjectGroups={allSubjectGroups}
             handleGetSubjects={handleGetSubjects}
+            dropdownBoardId={dropdownBoardId}
+            dropdownMediumId={dropdownMediumId}
+            dropdownGradeId={dropdownGradeId}
+            dropdownSubjectGroupId={dropdownSubjectGroupId}
           />
 
           <div>
@@ -397,7 +489,7 @@ export default function ExamSubject() {
                         {allGrades.map((medium, index) => {
                           return (
                             <MenuItem key={index} value={medium.id}>
-                              {medium.mediumName}
+                              {medium.grade}
                             </MenuItem>
                           );
                         })}
@@ -433,6 +525,141 @@ export default function ExamSubject() {
                 <DialogActions>
                   <Button onClick={() => setOpenModal(false)}>Cancel</Button>
                   <Button type='submit'>Add</Button>
+                </DialogActions>
+              </form>
+            </Dialog>
+          </div>
+
+          <div>
+            <Dialog fullWidth open={openModalUpdate} onClose={() => setOpenModal(false)}>
+
+              <form onSubmit={handleUpdateSubject}>
+                <DialogTitle>Board</DialogTitle>
+                <DialogContent>
+                  <Box sx={{ margin: '12px' }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="demo-simple-select-label">Board</InputLabel>
+
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        label="Board"
+                        value={updateBoardId}
+                        onChange={(e) => {
+                          setUpdateBoardId(e.target.value);
+                          handleBoards(e.target.value)
+                        }}
+                      >
+                        {allBoards.map((board, index) => {
+
+
+                          return (
+                            <MenuItem key={board?.id} value={board?.id}>
+                              {' '}
+                              {board?.boardName}
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  <Box sx={{ margin: '12px' }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="demo-simple-select-label">Medium</InputLabel>
+
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        label="Medium"
+                        value={updateMediumId}
+                        onChange={(e) => {
+                          setUpdateMediumId(e.target.value);
+                          handleGetGrade(e.target.value)
+                        }}
+                      >
+                        {allMediums.map((medium, index) => {
+
+
+                          return (
+                            <MenuItem key={medium?.id} value={medium?.id}>
+                              {' '}
+                              {medium?.mediumName}
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  <Box sx={{ margin: '12px' }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="demo-simple-select-label">Grade</InputLabel>
+
+                      <Select labelId="demo-simple-select-label"
+                        id="demo-simple-"
+                        label="Grade"
+                        value={updateGradeId}
+                        onChange={(e) => {
+                          setUpdateGradeId(e.target.value);
+                          handleGetSubjectGroup(e.target.value)
+                        }}
+                      >
+                        {allGrades.map((grade, index) => {
+                          console.log({ grade }, grade?.id)
+
+                          return (
+                            <MenuItem key={grade?.id} value={grade?.id}>
+                              {' '}
+                              {grade?.grade}
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  <Box sx={{ margin: '12px' }}>
+                    <FormControl fullWidth>
+                      <InputLabel id="demo-simple-select-label">Subject Group</InputLabel>
+
+                      <Select labelId="demo-simple-select-label"
+                        id="demo-simple-"
+                        label="Subject Group"
+                        value={updateSubjectGroupId}
+                        onChange={(e) => {
+                          setUpdateSubjectGroupId(e.target.value);
+                        }}
+                      >
+                        {allSubjectGroups.map((subjectGroup, index) => {
+
+                          return (
+                            <MenuItem key={subjectGroup?.id} value={subjectGroup?.id}>
+                              {' '}
+                              {subjectGroup?.subjectGroup}
+                            </MenuItem>
+                          );
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Box>
+
+                  <Box sx={{ margin: '12px' }}>
+                    <TextField
+                      fullWidth
+                      id="outlined-basic"
+                      // label="Board"
+                      variant="outlined"
+                      value={updateSubject}
+                      onChange={(e) => setUpdateSubject(e.target.value)}
+                    />
+                  </Box>
+                  {allField.length > 0 && (
+                    <Typography sx={{ color: 'red' }} variant="p" gutterBottom>
+                      {allField}
+                    </Typography>
+                  )}
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setOpenModalUpdate(false)}>Cancel</Button>
+                  <Button type="submit">Update</Button>
                 </DialogActions>
               </form>
             </Dialog>
@@ -479,6 +706,16 @@ export default function ExamSubject() {
                         <TableCell align="left">{grade}</TableCell>
                         <TableCell align="left">{subjectGroup}</TableCell>
                         <TableCell align="left">{subjectName}</TableCell>
+                        <TableCell>
+                          <Button
+                            onClick={() => handleEditModal(id)}
+                            size="small"
+                            sx={{ background: '#6c757d', marginRight: '4px' }}
+                            variant="contained"
+                          >
+                            <EditIcon />{' '}
+                          </Button>
+                        </TableCell>
                         {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
                         <TableCell align="left">
                           <Label variant="ghost" color={(status === 'banned' && 'error') || 'success'}>

@@ -223,6 +223,7 @@ export default function ExamSubjectGroup() {
 
   const handleBoards = async (boardId) => {
     console.log({ boardId });
+    setDropdownBoardId(boardId)
     const h = {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -240,8 +241,9 @@ export default function ExamSubjectGroup() {
 
   const handleGetGrade = async (mediumId) => {
     console.log({ mediumId });
+    setDropdownMediumId(mediumId)
     const h = {
-      Authorization: `Bearer ${token}`,
+      "Authorization": `Bearer ${token}`,
       'Content-Type': 'application/json',
     };
     try {
@@ -257,6 +259,7 @@ export default function ExamSubjectGroup() {
 
   const handleGetSubjectGroup = async (gradeId) => {
     console.log({ gradeId });
+    setDropdownGradeId(gradeId)
     const h = {
       "Authorization": `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -325,8 +328,6 @@ export default function ExamSubjectGroup() {
       setUpdateGradeId(data.gradeId);
       setUpdateSubjectGroup(data.subjectGroup);
       handleBoards(data.boardId);
-      handleGetGrade(data.mediumId);
-      handleGetSubjectGroup(data.gradeId);
     } catch (error) {
       console.log({ error });
     }
@@ -550,6 +551,7 @@ export default function ExamSubjectGroup() {
                         value={updateMediumId}
                         onChange={(e) => {
                           setUpdateMediumId(e.target.value);
+                          handleGetGrade(e.target.value)
                         }}
                       >
                         {allMediums.map((medium, index) => {
@@ -571,14 +573,14 @@ export default function ExamSubjectGroup() {
 
                       <Select labelId="demo-simple-select-label"
                         id="demo-simple-"
-                        label="Medium"
+                        label="Grade"
                         value={updateGradeId}
                         onChange={(e) => {
                           setUpdateGradeId(e.target.value);
                         }}
                       >
                         {allGrades.map((grade, index) => {
-
+                          console.log({ grade }, grade?.id)
 
                           return (
                             <MenuItem key={grade?.id} value={grade?.id}>

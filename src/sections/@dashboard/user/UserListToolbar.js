@@ -84,6 +84,9 @@ export default function UserListToolbar({
   dropdownMediumId,
   dropdownGradeId,
   dropdownSubjectGroupId,
+  subjects,
+  handleGetChapter,
+  allSubjects
 }) {
   return (
     <RootStyle
@@ -321,7 +324,7 @@ export default function UserListToolbar({
                 <Select
                   labelId="category"
                   id="demo-simple-select"
-                  label="Grade"
+                  label="Subject Group"
                   value={dropdownSubjectGroupId}
                   onChange={(e) => {
                     handleGetSubjects(e.target.value);
@@ -332,6 +335,39 @@ export default function UserListToolbar({
                     return (
                       <MenuItem key={index} value={subjectGroup.id}>
                         {subjectGroup.subjectGroup}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Box>
+          )}
+        </>
+      )}
+
+      {numSelected > 0 ? (
+        <Typography component="div" variant="subtitle1">
+          {numSelected} selected
+        </Typography>
+      ) : (
+        <>
+          {subjects && (
+            <Box sx={{ minWidth: 170, margin: '7px' }}>
+              <FormControl fullWidth>
+                <InputLabel id="category">Subject</InputLabel>
+                <Select
+                  labelId="category"
+                  id="demo-simple-select"
+                  label="Subject"
+                  // value={dropdownSubjectGroupId}
+                  onChange={(e) => {
+                    handleGetChapter(e.target.value);
+                  }}
+                >
+                  {allSubjects.map((sub, index) => {
+                    return (
+                      <MenuItem key={index} value={sub.id}>
+                        {sub.subjectName}
                       </MenuItem>
                     );
                   })}

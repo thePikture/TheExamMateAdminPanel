@@ -40,6 +40,10 @@ export default function AccountPopover() {
   };
 
   const handleClose = () => {
+    setOpen(null);
+  };
+
+  const handleCloseLogout = () => {
     sessionStorage.removeItem("token")
     window.location.reload(true);
   };
@@ -70,7 +74,7 @@ export default function AccountPopover() {
       <MenuPopover
         open={Boolean(open)}
         anchorEl={open}
-        // onClose={handleClose}
+        onClose={handleClose}
         sx={{
           p: 0,
           mt: 1.5,
@@ -94,7 +98,7 @@ export default function AccountPopover() {
 
         <Divider sx={{ borderStyle: 'dashed' }} />
 
-        <MenuItem onClick={handleClose} sx={{ m: 1 }}>
+        <MenuItem onClick={handleCloseLogout} sx={{ m: 1 }}>
           Logout
         </MenuItem>
       </MenuPopover>

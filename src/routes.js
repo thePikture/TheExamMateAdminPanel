@@ -20,6 +20,9 @@ import ExamSubject from './pages/ExamSubject';
 import ExamGrade from './pages/ExamGrade';
 import School from './pages/School';
 import AddSchool from './pages/AddSchool';
+import QuestionsBank from './pages/QuestionsBank';
+import AddQuestion from './pages/AddQuestion';
+import ExamChapter from './pages/ExamChapter';
 
 // ----------------------------------------------------------------------
 
@@ -43,6 +46,9 @@ export default function Router({ loggedIn }) {
         { path: 'exam-subject', element: <ExamSubject /> },
         { path: 'school', element: <School /> },
         { path: 'add-school', element: <AddSchool /> },
+        { path: 'question-bank', element: <QuestionsBank /> },
+        { path: 'add-question', element: <AddQuestion /> },
+        { path: 'exam-chapter', element: <ExamChapter /> },
       ],
     },
     {

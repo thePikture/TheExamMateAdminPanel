@@ -349,7 +349,7 @@ export default function ExamSubject() {
 
   const handleUpdateSubject = async (e) => {
     e.preventDefault()
-    setOpenModalUpdate(false)
+    // setOpenModalUpdate(false)
     const h = {
       "Authorization": `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -375,6 +375,7 @@ export default function ExamSubject() {
           handleBoards(updateBoardId)
           handleGetGrade(updateMediumId)
           handleGetSubjectGroup(updateGradeId)
+          handleGetSubjects(updateSubjectGroupId)
           setDropdownBoardId(updateBoardId)
           setDropdownMediumId(updateMediumId)
           setDropdownGradeId(updateGradeId)
@@ -616,6 +617,7 @@ export default function ExamSubject() {
                       </Select>
                     </FormControl>
                   </Box>
+
                   <Box sx={{ margin: '12px' }}>
                     <FormControl fullWidth>
                       <InputLabel id="demo-simple-select-label">Subject Group</InputLabel>
@@ -629,7 +631,6 @@ export default function ExamSubject() {
                         }}
                       >
                         {allSubjectGroups.map((subjectGroup, index) => {
-
                           return (
                             <MenuItem key={subjectGroup?.id} value={subjectGroup?.id}>
                               {' '}

@@ -277,6 +277,14 @@ export default function NavSection({ navConfig, ...other }) {
               }}
               active={match}
             />
+            <NavItem
+              item={{
+                title: 'Chapter',
+                path: '/dashboard/exam-chapter',
+                icon: getIcon('grommet-icons:chapter-add'),
+              }}
+              active={match}
+            />
           </>
         )}
         <NavItem
@@ -284,6 +292,14 @@ export default function NavSection({ navConfig, ...other }) {
             title: 'School',
             path: '/dashboard/school',
             icon: getIcon('teenyicons:school-outline'),
+          }}
+          active={match}
+        />
+        <NavItem
+          item={{
+            title: 'Question Bank',
+            path: '/dashboard/question-bank',
+            icon: getIcon('mdi:folder-question-outline'),
           }}
           active={match}
         />

@@ -359,7 +359,7 @@ export default function Student() {
                             </Typography>
                           </Stack>
                         </TableCell> */}
-                        <TableCell align="left">{stateId}</TableCell>
+                        <TableCell align="left">{id}</TableCell>
                         <TableCell align="left">{stateCode}</TableCell>
                         <TableCell align="left">{stateName}</TableCell>
                         <TableCell>
